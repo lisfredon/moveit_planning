@@ -1,0 +1,3 @@
+<launch>
+  <node name="interactive_spawn_cube" pkg="panda_moveit_config" type="interactive_spawn_cube" output="screen"/>
+</launch>

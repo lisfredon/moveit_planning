@@ -1,0 +1,3 @@
+<launch>
+  <node name="interactive_place" pkg="panda_moveit_config" type="interactive_place" output="screen"/>
+</launch>

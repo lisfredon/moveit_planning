@@ -1,0 +1,6 @@
+<launch>
+  <node name="spawn_scene" pkg="panda_moveit_config" type="spawn_scene" output="screen">
+  <rosparam file="/home/lfredon/Documents/ws_moveit/src/panda_moveit_config/demo/src/spawn_scene.yaml" command="load"/>
+  </node>
+</launch>
+
