@@ -1,5 +1,6 @@
 #include "moveit_planning/approch_utils.h"
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 ApproachType approachTypeFromString(const std::string& type_str) {
     if (type_str == "verticale") return ApproachType::VERTICALE;
@@ -29,9 +30,6 @@ geometry_msgs::Pose createApproachPose(const geometry_msgs::Pose& object_pose,
             break;
     }
 
-    approach_pose.orientation.x = q.x();
-    approach_pose.orientation.y = q.y();
-    approach_pose.orientation.z = q.z();
-    approach_pose.orientation.w = q.w();
+    approach_pose.orientation = tf2::toMsg(q);
     return approach_pose;
 }

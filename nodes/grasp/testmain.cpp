@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     cube_pose.position.x = ox;
     cube_pose.position.y = oy;
     cube_pose.position.z = oz;
-    //cube_pose.orientation.x = 0.7;
+    cube_pose.orientation.x = px;
     cube_pose.orientation.y = py;
     cube_pose.orientation.z = pz;
     cube_pose.orientation.w = pw;

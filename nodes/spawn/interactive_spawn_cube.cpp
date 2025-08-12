@@ -54,10 +54,10 @@ int main(int argc, char** argv)
     cube_pose.position.y = py;
     cube_pose.position.z = pz;
     //cube_pose.orientation.w = 1.0; // Pas de rotation
-    cube_pose.orientation.x = 0.7;
-    cube_pose.orientation.y = 0.0;
+    cube_pose.orientation.x = 0.9;
+    cube_pose.orientation.y = 0.5;
     cube_pose.orientation.z = 0.5;
-    cube_pose.orientation.w = 1.0;
+    cube_pose.orientation.w = 0.4;
 
     cube.primitive_poses.push_back(cube_pose);
     cube.operation = cube.ADD;
@@ -77,10 +77,10 @@ int main(int argc, char** argv)
     nh.setParam("/grasp/obj_pos_z", pz); 
     ROS_INFO("Position de l'objet enregistrée dans les paramètres ROS.");
 
-    nh.setParam("/grasp/obj_ori_x", 0.0);
-    nh.setParam("/grasp/obj_ori_y", 0.0);
+    nh.setParam("/grasp/obj_ori_x", 0.9);
+    nh.setParam("/grasp/obj_ori_y", 0.5);
     nh.setParam("/grasp/obj_ori_z", 0.5);
-    nh.setParam("/grasp/obj_ori_w", 1.0);
+    nh.setParam("/grasp/obj_ori_w", 0.4);
     ROS_INFO("Orientation de l'objet enregistrée dans les paramètres ROS.");
 
     

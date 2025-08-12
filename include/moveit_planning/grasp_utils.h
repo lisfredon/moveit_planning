@@ -38,19 +38,5 @@ std::vector<geometry_msgs::Pose> generateGraspPoses(
 #include <Eigen/Core>
 #include <tf2/LinearMath/Quaternion.h>
 
-/// Crée une pose de préhension à partir d'une stratégie
-geometry_msgs::Pose createGraspPose(const geometry_msgs::Pose& object_pose,
-                                    const std::string& strategy);
-
-/// Génère des poses en tournant autour d’un axe
-std::vector<geometry_msgs::Pose> generateGraspPoses(
-    const geometry_msgs::Pose& object_pose,
-    const Eigen::Vector3d& rotation_axis = Eigen::Vector3d::UnitZ(),
-    double angle_delta = M_PI / 8.0,
-    double max_angle = 2 * M_PI,
-    const tf2::Quaternion& orientation_offset = tf2::Quaternion(0, 0, 0, 1));
-
-/// Génère une pose pour chaque face du cube (en orientant la pince face normale)
-std::vector<geometry_msgs::Pose> generateFaceGraspPoses(const geometry_msgs::Pose& cube_pose_msg);
-
+geometry_msgs::Pose generateAlignedGraspPose(const geometry_msgs::Pose& cube_pose);
 #endif  // MOVEIT_PLANNING_GRASP_UTILS_H
