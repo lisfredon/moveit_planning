@@ -42,8 +42,6 @@ int main(int argc, char** argv) {
   // Paramètres de planification
   move_group.setPlanningTime(20.0);
   move_group.setMaxVelocityScalingFactor(0.5);
-
-  // Référence pour la pose cible
   move_group.setPoseReferenceFrame("panda_link0");
 
   // Lire la position de l'objet depuis les paramètres ROS

@@ -1,5 +1,7 @@
 #include "moveit_planning/utils.h"
 
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <geometry_msgs/Pose.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <ros/ros.h>

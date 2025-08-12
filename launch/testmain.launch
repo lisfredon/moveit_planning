@@ -1,0 +1,3 @@
+<launch>
+  <node name="testmain" pkg="moveit_planning" type="testmain" output="screen"/>
+</launch>

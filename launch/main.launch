@@ -1,0 +1,6 @@
+<launch>
+  <rosparam file="/home/lfredon/Documents/ws_moveit/src/moveit_planning/config/object_params.yaml" command="load"/>
+  <node name="main" pkg="moveit_planning" type="main" output="screen">
+  
+  </node>
+</launch>

@@ -1,3 +1,3 @@
 <launch>
-  <node name="orient_and_place_cube" pkg="panda_moveit_config" type="orient_and_place_cube" output="screen"/>
+  <node name="orient_and_place_cube" pkg="moveit_planning" type="orient_and_place_cube" output="screen"/>
 </launch>

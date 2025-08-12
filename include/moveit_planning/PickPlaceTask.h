@@ -19,7 +19,6 @@ private:
   ros::NodeHandle pnh_;
   std::string task_name_;
   moveit::task_constructor::TaskPtr task_;
-  // ... autres variables nécessaires
 };
 
 }  // namespace moveit_task_constructor_demo
