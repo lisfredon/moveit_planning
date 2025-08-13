@@ -70,6 +70,7 @@ target_link_libraries(interactive_place ${catkin_LIBRARIES})
 
 add_executable(testmain nodes/grasp/testmain.cpp)
 target_link_libraries(testmain ${catkin_LIBRARIES})
+add_dependencies(testmain ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(face_colors nodes/grasp/face_colors.cpp)
 target_link_libraries(face_colors ${catkin_LIBRARIES})
