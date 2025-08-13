@@ -38,5 +38,9 @@ std::vector<geometry_msgs::Pose> generateGraspPoses(
 #include <Eigen/Core>
 #include <tf2/LinearMath/Quaternion.h>
 
-geometry_msgs::Pose generateAlignedGraspPose(const geometry_msgs::Pose& cube_pose);
+//geometry_msgs::Pose generateAlignedGraspPose(const geometry_msgs::Pose& cube_pose);
+geometry_msgs::Pose generateAlignedGraspPose(
+    const geometry_msgs::Pose& cube_pose,
+    const tf2::Vector3& n_local,
+    double offset = 0.00) ;
 #endif  // MOVEIT_PLANNING_GRASP_UTILS_H

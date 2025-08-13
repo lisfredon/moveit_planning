@@ -95,23 +95,34 @@ int main(int argc, char** argv) {
         move_group.setPlanningTime(10.0); 
         */
 
-    // Génération de la pose de préhension alignée au cube
-    geometry_msgs::Pose grasp_pose = generateAlignedGraspPose(object_pose);
-    ROS_INFO_STREAM("Grasp pose: " << grasp_pose);
+    std::vector<tf2::Vector3> face_normals = {
+        tf2::Vector3(1, 0, 0),  // +X
+        tf2::Vector3(-1, 0, 0), // -X
+        tf2::Vector3(0, 1, 0),  // +Y
+        tf2::Vector3(0, -1, 0), // -Y
+        tf2::Vector3(0, 0, 1),  // +Z
+        tf2::Vector3(0, 0, -1)  // -Z
+    };
 
-    move_group.setPoseTarget(grasp_pose);
-    moveit::planning_interface::MoveGroupInterface::Plan plan;
-    if (move_group.plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
-        move_group.execute(plan);
-        gripper_group.setJointValueTarget(std::vector<double>{0.0, 0.0});
-        gripper_group.move();
+    for (size_t i = 0; i < face_normals.size(); ++i) {
+        geometry_msgs::Pose grasp_pose = generateAlignedGraspPose(object_pose, face_normals[i], 0.00);
+        ROS_INFO_STREAM("Test face " << i << " : " << grasp_pose);
 
-        // Attacher l'objet à l'effecteur
-        moveit_msgs::AttachedCollisionObject attached_object;
-        attached_object.link_name = move_group.getEndEffectorLink();
-        attached_object.object = cube;
-        attached_object.object.operation = attached_object.object.ADD;
-        planning_scene_interface.applyAttachedCollisionObject(attached_object);
+        move_group.setPoseTarget(grasp_pose);
+        moveit::planning_interface::MoveGroupInterface::Plan plan;
+        if (move_group.plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
+            ROS_INFO_STREAM("Plan trouvé pour face " << i);
+            move_group.execute(plan);
+            gripper_group.setJointValueTarget(std::vector<double>{0.0, 0.0});
+            gripper_group.move();
+
+            // Attacher l'objet à l'effecteur
+            moveit_msgs::AttachedCollisionObject attached_object;
+            attached_object.link_name = move_group.getEndEffectorLink();
+            attached_object.object = cube;
+            attached_object.object.operation = attached_object.object.ADD;
+            planning_scene_interface.applyAttachedCollisionObject(attached_object);
+        }
     }
 
     ros::shutdown();
