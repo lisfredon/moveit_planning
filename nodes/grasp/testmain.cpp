@@ -17,57 +17,7 @@
 #include "moveit_planning/solvers_utils.h"
 #include "moveit_planning/visualization_utils.h"
 #include "moveit_planning/load_utils.h"
-
-geometry_msgs::Pose generateGraspPose(
-    const geometry_msgs::Pose& cube_pose,
-    const tf2::Vector3& n_local,
-    const tf2::Vector3& in_plane_axis_local,
-    double offset = 0.0)
-{
-    // Rotation réelle du cube
-    tf2::Quaternion q_cube;
-    tf2::fromMsg(cube_pose.orientation, q_cube);
-    tf2::Matrix3x3 R_cube(q_cube);
-
-    // Normale et axe dans le plan en coordonnées globales
-    tf2::Vector3 z_axis = (R_cube * n_local).normalized();
-    tf2::Vector3 y_axis = (R_cube * in_plane_axis_local).normalized();
-
-    // Si y_axis est trop colinéaire à z_axis → on choisit un vecteur fixe
-    if (fabs(y_axis.dot(z_axis)) > 0.999) {
-        // Vecteur global fixe pour stabiliser ±Z
-        tf2::Vector3 world_ref(0, 1, 0);
-        if (fabs(world_ref.dot(z_axis)) > 0.999) {
-            world_ref = tf2::Vector3(1, 0, 0);
-        }
-        y_axis = (world_ref - world_ref.dot(z_axis) * z_axis).normalized();
-    }
-
-    // Orthogonaliser
-    tf2::Vector3 x_axis = y_axis.cross(z_axis).normalized();
-    y_axis = z_axis.cross(x_axis).normalized();
-
-    // Position de préhension
-    tf2::Vector3 p_cube(cube_pose.position.x, cube_pose.position.y, cube_pose.position.z);
-    tf2::Vector3 p_gripper = p_cube - offset * z_axis;
-
-    // Rotation finale
-    tf2::Matrix3x3 R_gripper(
-        x_axis.x(), y_axis.x(), z_axis.x(),
-        x_axis.y(), y_axis.y(), z_axis.y(),
-        x_axis.z(), y_axis.z(), z_axis.z());
-
-    tf2::Quaternion q_gripper;
-    R_gripper.getRotation(q_gripper);
-
-    geometry_msgs::Pose grasp_pose;
-    grasp_pose.position.x = p_gripper.x();
-    grasp_pose.position.y = p_gripper.y();
-    grasp_pose.position.z = p_gripper.z();
-    grasp_pose.orientation = tf2::toMsg(q_gripper);
-
-    return grasp_pose;
-}
+#include "moveit_planning/grasp_utils.h"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
