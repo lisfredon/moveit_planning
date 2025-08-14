@@ -18,6 +18,7 @@
 #include "moveit_planning/visualization_utils.h"
 #include "moveit_planning/load_utils.h"
 #include "moveit_planning/grasp_utils.h"
+#include "moveit_planning/add_object.h"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
@@ -34,16 +35,7 @@ int main(int argc, char** argv) {
     geometry_msgs::Pose cube_pose = loadParam("/cube");
 
     // Ajouter cube à MoveIt
-    moveit_msgs::CollisionObject cube;
-    cube.header.frame_id = "panda_link0";
-    cube.id = "cube";
-    shape_msgs::SolidPrimitive cube_primitive;
-    cube_primitive.type = shape_msgs::SolidPrimitive::BOX;
-    cube_primitive.dimensions = cube_size;
-    cube.primitives.push_back(cube_primitive);
-    cube.primitive_poses.push_back(cube_pose);
-    cube.operation = moveit_msgs::CollisionObject::ADD;
-    planning_scene_interface.applyCollisionObjects({cube});
+    addCubeToScene(planning_scene_interface, "cube", cube_pose, cube_size);
 
     // Normales locales des faces du cube
     std::vector<tf2::Vector3> face_normals = {
