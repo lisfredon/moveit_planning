@@ -15,83 +15,8 @@
 #include <moveit_msgs/AttachedCollisionObject.h>
 
 #include "moveit_planning/solvers_utils.h"
-
-void publishFaceNormalsWithText(const geometry_msgs::Pose& cube_pose,
-                                const std::vector<tf2::Vector3>& face_normals,
-                                const std::vector<std::string>& face_names,
-                                ros::Publisher& marker_pub)
-{
-    visualization_msgs::MarkerArray marker_array;
-
-    tf2::Quaternion q_cube;
-    tf2::fromMsg(cube_pose.orientation, q_cube);
-    tf2::Matrix3x3 R_cube(q_cube);
-    tf2::Vector3 p_cube(cube_pose.position.x, cube_pose.position.y, cube_pose.position.z);
-
-    for (size_t i = 0; i < face_normals.size(); ++i) {
-        tf2::Vector3 n_global = R_cube * face_normals[i];
-
-        // --- Flèche ---
-        visualization_msgs::Marker arrow;
-        arrow.header.frame_id = "panda_link0";
-        arrow.header.stamp = ros::Time::now();
-        arrow.ns = "face_normals";
-        arrow.id = i;
-        arrow.type = visualization_msgs::Marker::ARROW;
-        arrow.action = visualization_msgs::Marker::ADD;
-
-        geometry_msgs::Point start, end;
-        start.x = p_cube.x();
-        start.y = p_cube.y();
-        start.z = p_cube.z();
-        end.x = p_cube.x() + 0.1 * n_global.x();
-        end.y = p_cube.y() + 0.1 * n_global.y();
-        end.z = p_cube.z() + 0.1 * n_global.z();
-        arrow.points.push_back(start);
-        arrow.points.push_back(end);
-
-        arrow.scale.x = 0.01;
-        arrow.scale.y = 0.02;
-        arrow.scale.z = 0.0;
-
-        // Couleur flèche
-        if (face_names[i] == "+X") { arrow.color.r = 1.0; arrow.color.g = 0; arrow.color.b = 0; }
-        else if (face_names[i] == "-X") { arrow.color.r = 0.5; arrow.color.g = 0; arrow.color.b = 0; }
-        else if (face_names[i] == "+Y") { arrow.color.r = 0; arrow.color.g = 1.0; arrow.color.b = 0; }
-        else if (face_names[i] == "-Y") { arrow.color.r = 0; arrow.color.g = 0.5; arrow.color.b = 0; }
-        else if (face_names[i] == "+Z") { arrow.color.r = 0; arrow.color.g = 0; arrow.color.b = 1.0; }
-        else if (face_names[i] == "-Z") { arrow.color.r = 0; arrow.color.g = 0; arrow.color.b = 0.5; }
-        arrow.color.a = 1.0;
-        arrow.lifetime = ros::Duration(0);
-        marker_array.markers.push_back(arrow);
-
-        // --- Texte ---
-        visualization_msgs::Marker text;
-        text.header.frame_id = "panda_link0";
-        text.header.stamp = ros::Time::now();
-        text.ns = "face_normals_text";
-        text.id = i + 100; // ID différent pour ne pas confliter avec les flèches
-        text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-        text.action = visualization_msgs::Marker::ADD;
-
-        text.pose.position.x = end.x;
-        text.pose.position.y = end.y;
-        text.pose.position.z = end.z;
-        text.pose.orientation.w = 1.0;
-
-        text.scale.z = 0.05;
-        text.color.r = 1.0;
-        text.color.g = 1.0;
-        text.color.b = 1.0;
-        text.color.a = 1.0;
-
-        text.text = face_names[i];
-        text.lifetime = ros::Duration(0);
-        marker_array.markers.push_back(text);
-    }
-
-    marker_pub.publish(marker_array);
-}
+#include "moveit_planning/visualization_utils.h"
+#include "moveit_planning/load_utils.h"
 
 geometry_msgs::Pose generateGraspPose(
     const geometry_msgs::Pose& cube_pose,
@@ -144,26 +69,6 @@ geometry_msgs::Pose generateGraspPose(
     return grasp_pose;
 }
 
-
-// Charger une pose depuis le paramètre ROS
-geometry_msgs::Pose loadParam(const std::string& param_namespace) {
-    std::vector<double> pos, ori;
-    geometry_msgs::Pose pose;
-    if (!ros::param::get(param_namespace + "/position", pos) ||
-        !ros::param::get(param_namespace + "/orientation", ori)) {
-        ROS_ERROR_STREAM("Impossible de charger les paramètres pour " << param_namespace);
-        throw std::runtime_error("Paramètres manquants");
-    }
-    pose.position.x = pos[0];
-    pose.position.y = pos[1];
-    pose.position.z = pos[2];
-    pose.orientation.x = ori[0];
-    pose.orientation.y = ori[1];
-    pose.orientation.z = ori[2];
-    pose.orientation.w = ori[3];
-    return pose;
-}
-
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
     ros::NodeHandle nh;
@@ -175,11 +80,7 @@ int main(int argc, char** argv) {
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
     // Charger cube
-    std::vector<double> cube_size;
-    if (!ros::param::get("/cube/size", cube_size) || cube_size.size() != 3) {
-        ROS_ERROR("Impossible de charger la taille du cube !");
-        return 1;
-    }
+    std::vector<double> cube_size = loadCubeSizeParam("/cube/size");
     geometry_msgs::Pose cube_pose = loadParam("/cube");
 
     // Ajouter cube à MoveIt
@@ -250,17 +151,6 @@ int main(int argc, char** argv) {
         return 1;
     }
     else ROS_INFO("Phase d'approche effectuée.");
-    /*
-    move_group.setPoseTarget(approach_pose);
-    moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
-    if (move_group.plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
-        move_group.execute(approach_plan);
-        ROS_INFO("Phase d'approche effectuée.");
-    } else {
-        ROS_ERROR("Impossible de planifier la phase d'approche !");
-        return 1;
-    }
-    */
 
     // Phase de grip
     double grip_offset = 0.0;
@@ -271,28 +161,6 @@ int main(int argc, char** argv) {
         return 1;
     }
     else ROS_INFO("Phase de grip effectuée.");
-    /*
-    move_group.setPoseTarget(grip_pose);
-    moveit::planning_interface::MoveGroupInterface::Plan grip_plan;
-    if (move_group.plan(grip_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
-        move_group.execute(grip_plan);
-        ROS_INFO("Phase de grip effectuée.");
-
-        // Fermer la pince
-        gripper_group.setJointValueTarget(std::vector<double>{0.0,0.0});
-        gripper_group.move();
-
-        // Attacher l'objet
-        moveit_msgs::AttachedCollisionObject attached_object;
-        attached_object.link_name = move_group.getEndEffectorLink();
-        attached_object.object = cube;
-        attached_object.object.operation = attached_object.object.ADD;
-        planning_scene_interface.applyAttachedCollisionObject(attached_object);
-    } else {
-        ROS_ERROR("Impossible de planifier la phase de grip !");
-        return 1;
-    }
-    */
 
     ros::shutdown();
 }
