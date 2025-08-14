@@ -13,6 +13,9 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/AttachedCollisionObject.h>
+
+#include "moveit_planning/solvers_utils.h"
+
 void publishFaceNormalsWithText(const geometry_msgs::Pose& cube_pose,
                                 const std::vector<tf2::Vector3>& face_normals,
                                 const std::vector<std::string>& face_names,
@@ -71,12 +74,12 @@ void publishFaceNormalsWithText(const geometry_msgs::Pose& cube_pose,
         text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
         text.action = visualization_msgs::Marker::ADD;
 
-        text.pose.position.x = end.x; // placer le texte à l’extrémité de la flèche
+        text.pose.position.x = end.x;
         text.pose.position.y = end.y;
         text.pose.position.z = end.z;
         text.pose.orientation.w = 1.0;
 
-        text.scale.z = 0.05; // taille du texte
+        text.scale.z = 0.05;
         text.color.r = 1.0;
         text.color.g = 1.0;
         text.color.b = 1.0;
@@ -90,29 +93,40 @@ void publishFaceNormalsWithText(const geometry_msgs::Pose& cube_pose,
     marker_pub.publish(marker_array);
 }
 
-
-// Génération de la pose de préhension à partir de la pose du cube, normale de la face et axe dans le plan
 geometry_msgs::Pose generateGraspPose(
     const geometry_msgs::Pose& cube_pose,
     const tf2::Vector3& n_local,
-    const tf2::Vector3& grasp_in_plane_axis,
+    const tf2::Vector3& in_plane_axis_local,
     double offset = 0.0)
 {
+    // Rotation réelle du cube
     tf2::Quaternion q_cube;
     tf2::fromMsg(cube_pose.orientation, q_cube);
     tf2::Matrix3x3 R_cube(q_cube);
 
-    tf2::Vector3 n_global = R_cube * n_local;
-    tf2::Vector3 grasp_axis_global = R_cube * grasp_in_plane_axis;
+    // Normale et axe dans le plan en coordonnées globales
+    tf2::Vector3 z_axis = (R_cube * n_local).normalized();
+    tf2::Vector3 y_axis = (R_cube * in_plane_axis_local).normalized();
 
-    tf2::Vector3 p_cube(cube_pose.position.x, cube_pose.position.y, cube_pose.position.z);
-    tf2::Vector3 p_gripper = p_cube - offset * n_global;
+    // Si y_axis est trop colinéaire à z_axis → on choisit un vecteur fixe
+    if (fabs(y_axis.dot(z_axis)) > 0.999) {
+        // Vecteur global fixe pour stabiliser ±Z
+        tf2::Vector3 world_ref(0, 1, 0);
+        if (fabs(world_ref.dot(z_axis)) > 0.999) {
+            world_ref = tf2::Vector3(1, 0, 0);
+        }
+        y_axis = (world_ref - world_ref.dot(z_axis) * z_axis).normalized();
+    }
 
-    // Construire la base du gripper
-    tf2::Vector3 z_axis = n_global.normalized();
-    tf2::Vector3 y_axis = (grasp_axis_global - (grasp_axis_global.dot(z_axis)) * z_axis).normalized();
+    // Orthogonaliser
     tf2::Vector3 x_axis = y_axis.cross(z_axis).normalized();
+    y_axis = z_axis.cross(x_axis).normalized();
 
+    // Position de préhension
+    tf2::Vector3 p_cube(cube_pose.position.x, cube_pose.position.y, cube_pose.position.z);
+    tf2::Vector3 p_gripper = p_cube - offset * z_axis;
+
+    // Rotation finale
     tf2::Matrix3x3 R_gripper(
         x_axis.x(), y_axis.x(), z_axis.x(),
         x_axis.y(), y_axis.y(), z_axis.y(),
@@ -129,6 +143,7 @@ geometry_msgs::Pose generateGraspPose(
 
     return grasp_pose;
 }
+
 
 // Charger une pose depuis le paramètre ROS
 geometry_msgs::Pose loadParam(const std::string& param_namespace) {
@@ -186,21 +201,56 @@ int main(int argc, char** argv) {
         tf2::Vector3(0,0,1),  tf2::Vector3(0,0,-1)
     };
 
+    // Axes "largeur"
+    std::vector<tf2::Vector3> in_plane_axes_width = {
+        tf2::Vector3(0,0,1),  // +X
+        tf2::Vector3(0,0,1),  // -X
+        tf2::Vector3(1,0,0),  // +Y
+        tf2::Vector3(1,0,0),  // -Y
+        tf2::Vector3(1,0,0),  // +Z
+        tf2::Vector3(1,0,0)   // -Z
+    };
+
+    // Axes "longueur" (orthogonal à largeur et normale)
+    std::vector<tf2::Vector3> in_plane_axes_length = {
+        tf2::Vector3(0,1,0),  // +X
+        tf2::Vector3(0,1,0),  // -X
+        tf2::Vector3(0,0,1),  // +Y
+        tf2::Vector3(0,0,1),  // -Y
+        tf2::Vector3(0,1,0),  // +Z
+        tf2::Vector3(0,1,0)   // -Z
+    };
+
     // Choix de la face et de l'orientation dans le plan
-    int face_index = 0; // 0:+X, 1:-X, 2:+Y, ...
+    int face_index = 5; // 0:+X, 1:-X, 2:+Y, ...
     bool use_width = false; // true = "largeur", false = "longueur"
     tf2::Vector3 n_local = face_normals[face_index];
-    tf2::Vector3 in_plane_axis = use_width ? tf2::Vector3(0,1,0) : tf2::Vector3(0,0,1);
+    tf2::Vector3 in_plane_axis = use_width ? 
+        in_plane_axes_width[face_index] : 
+        in_plane_axes_length[face_index];
 
-    ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube_face_normals", 1, true);
+    ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube", 1, true);
 
     std::vector<std::string> face_names = {"+X","-X","+Y","-Y","+Z","-Z"};
     publishFaceNormalsWithText(cube_pose, face_normals, face_names, marker_pub);
+
+    // Liste des solveurs à tester
+    std::vector<std::pair<SolverType, std::string>> solvers = {
+        {SolverType::CARTESIAN, "CARTESIAN"},
+        {SolverType::OMPL, "OMPL"},
+        {SolverType::JOINT_INTERPOLATION, "JOINT_INTERPOLATION"}
+    };
 
     // Phase d'approche
     double approach_offset = 0.05; // 5 cm devant la face
     geometry_msgs::Pose approach_pose = generateGraspPose(cube_pose, n_local, in_plane_axis, approach_offset);
 
+    if (!planAndExecute(move_group, approach_pose, SolverType::OMPL)) {
+        ROS_ERROR("Impossible de planifier la phase d'approche !");
+        return 1;
+    }
+    else ROS_INFO("Phase d'approche effectuée.");
+    /*
     move_group.setPoseTarget(approach_pose);
     moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
     if (move_group.plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
@@ -210,11 +260,18 @@ int main(int argc, char** argv) {
         ROS_ERROR("Impossible de planifier la phase d'approche !");
         return 1;
     }
+    */
 
     // Phase de grip
     double grip_offset = 0.0;
     geometry_msgs::Pose grip_pose = generateGraspPose(cube_pose, n_local, in_plane_axis, grip_offset);
 
+    if (!planAndExecute(move_group, grip_pose, SolverType::OMPL)) {
+        ROS_ERROR("Impossible de planifier la phase de grip !");
+        return 1;
+    }
+    else ROS_INFO("Phase de grip effectuée.");
+    /*
     move_group.setPoseTarget(grip_pose);
     moveit::planning_interface::MoveGroupInterface::Plan grip_plan;
     if (move_group.plan(grip_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
@@ -235,6 +292,7 @@ int main(int argc, char** argv) {
         ROS_ERROR("Impossible de planifier la phase de grip !");
         return 1;
     }
+    */
 
     ros::shutdown();
 }
