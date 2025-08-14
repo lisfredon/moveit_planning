@@ -4,7 +4,7 @@
 #include <shape_msgs/SolidPrimitive.h>
 #include "moveit_planning/add_object.h"
 
-void addCubeToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
+void addObjectToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
                     const std::string& cube_id,
                     const geometry_msgs::Pose& cube_pose,
                     const std::vector<double>& cube_size,

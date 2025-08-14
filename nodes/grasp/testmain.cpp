@@ -31,11 +31,11 @@ int main(int argc, char** argv) {
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
     // Charger cube
-    std::vector<double> cube_size = loadCubeSizeParam("/cube/size");
+    std::vector<double> cube_size = loadObjectSizeParam("/cube/size");
     geometry_msgs::Pose cube_pose = loadParam("/cube");
 
     // Ajouter cube à MoveIt
-    addCubeToScene(planning_scene_interface, "cube", cube_pose, cube_size);
+    addObjectToScene(planning_scene_interface, "cube", cube_pose, cube_size);
 
     // Normales locales des faces du cube
     std::vector<tf2::Vector3> face_normals = {

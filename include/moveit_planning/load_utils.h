@@ -9,6 +9,6 @@
 
 geometry_msgs::Pose loadParam(const std::string& param_namespace);
 
-std::vector<double> loadCubeSizeParam(const std::string& param_name);
+std::vector<double> loadObjectSizeParam(const std::string& param_name);
 
 #endif
