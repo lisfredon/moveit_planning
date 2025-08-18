@@ -9,3 +9,7 @@ void publishFaceNormalsWithText(const geometry_msgs::Pose& cube_pose,
                                 const std::vector<tf2::Vector3>& face_normals,
                                 const std::vector<std::string>& face_names,
                                 ros::Publisher& marker_pub);
+
+void visualizeCubeFaces(
+    ros::Publisher& marker_pub,
+    const geometry_msgs::Pose& pose);

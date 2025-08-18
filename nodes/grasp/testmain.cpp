@@ -43,26 +43,22 @@ int main(int argc, char** argv) {
     bool use_width = false; // true = "largeur", false = "longueur"
     tf2::Vector3 n_local = getNormalForFace(face_index);
     tf2::Vector3 in_plane_axis = getInPlaneAxis(face_index, use_width);
-
-    std::vector<tf2::Vector3> face_normals;
-    for (int i = 0; i < 6; i++) {
-        face_normals.push_back(getNormalForFace(i));
-    }
+    
+    //Visualisation des axes du cube pour debug 
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube", 1, true);
-    std::vector<std::string> face_names = {"+X","-X","+Y","-Y","+Z","-Z"};
-    publishFaceNormalsWithText(cube_pose, face_normals, face_names, marker_pub);
-
-    // Liste des solveurs à tester
-    std::vector<std::pair<SolverType, std::string>> solvers = {
-        {SolverType::CARTESIAN, "CARTESIAN"},
-        {SolverType::OMPL, "OMPL"},
-        {SolverType::JOINT_INTERPOLATION, "JOINT_INTERPOLATION"}
-    };
+    visualizeCubeFaces(marker_pub, cube_pose);
 
     // Phase d'approche
     double approach_offset = 0.05; // 5 cm devant la face
     geometry_msgs::Pose approach_pose = generateGraspPose(cube_pose, n_local, in_plane_axis, approach_offset);
 
+        // Liste des solveurs à tester
+    std::vector<std::pair<SolverType, std::string>> solvers = {
+        {SolverType::CARTESIAN, "CARTESIAN"},
+        {SolverType::OMPL, "OMPL"},
+        {SolverType::JOINT_INTERPOLATION, "JOINT_INTERPOLATION"}
+    };
+    
     if (!planAndExecute(move_group, approach_pose, SolverType::OMPL)) {
         ROS_ERROR("Impossible de planifier la phase d'approche !");
         return 1;
