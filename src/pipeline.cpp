@@ -1,3 +1,4 @@
+/*
 #include "moveit_planning/pipeline.h"
 #include "moveit_planning/solvers_utils.h"  // suppose que tu as déjà ça
 #include "moveit_planning/grasp_utils.h"    // suppose que tu as déjà ça
@@ -48,3 +49,4 @@ bool GraspPipeline::run() {
     attachObject();
     return true;
 }
+*/

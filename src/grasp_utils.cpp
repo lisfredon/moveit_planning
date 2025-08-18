@@ -58,3 +58,21 @@ geometry_msgs::Pose generateGraspPose(
 
     return grasp_pose;
 }
+
+bool moveToGraspPhase(
+    moveit::planning_interface::MoveGroupInterface& move_group,
+    const geometry_msgs::Pose& obj_pose,
+    const tf2::Vector3& normal,
+    const tf2::Vector3& in_plane,
+    double offset,
+    SolverType solver,
+    const std::string& phase_name)
+{
+    geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, normal, in_plane, offset);
+    if (!planAndExecute(move_group, target_pose, solver)) {
+        ROS_ERROR_STREAM("Impossible de planifier la phase de " << phase_name << " !");
+        return false;
+    }
+    ROS_INFO_STREAM("Phase de " << phase_name << " effectuée.");
+    return true;
+}

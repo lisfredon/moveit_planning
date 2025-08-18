@@ -32,50 +32,28 @@ int main(int argc, char** argv) {
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
     // Charger cube
-    std::vector<double> cube_size = loadObjectSize("/cube/size");
-    geometry_msgs::Pose cube_pose = loadObjectPose("/cube");
+    auto cube_size = loadObjectSize("/cube/size");
+    auto cube_pose = loadObjectPose("/cube");
 
     // Ajouter cube à MoveIt
-    moveit_msgs::CollisionObject cube = addObjectToScene(planning_scene_interface, "cube", cube_pose, cube_size, move_group.getPlanningFrame());
+    auto cube = addObjectToScene(planning_scene_interface, "cube", cube_pose, cube_size, move_group.getPlanningFrame());
 
     // Choix de la face et de l'orientation dans le plan
     int face_index = 5; // 0:+X, 1:-X, 2:+Y, ...
-    bool use_width = false; // true = "largeur", false = "longueur"
     tf2::Vector3 n_local = getNormalObject(face_index);
-    tf2::Vector3 in_plane_axis = getObjectAxis(face_index, use_width);
+    tf2::Vector3 in_plane_axis = getObjectAxis(face_index, false);// true = "largeur", false = "longueur"
     
     //Visualisation des axes du cube pour debug 
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube", 1, true);
     visualizeCubeFaces(marker_pub, cube_pose);
 
     // Phase d'approche
-    double approach_offset = 0.05; // 5 cm devant la face
-    geometry_msgs::Pose approach_pose = generateGraspPose(cube_pose, n_local, in_plane_axis, approach_offset);
+    if (!moveToGraspPhase(move_group, cube_pose, n_local, in_plane_axis, 0.05, SolverType::OMPL, "approche")) return 1;
 
-        // Liste des solveurs à tester
-    std::vector<std::pair<SolverType, std::string>> solvers = {
-        {SolverType::CARTESIAN, "CARTESIAN"},
-        {SolverType::OMPL, "OMPL"},
-        {SolverType::JOINT_INTERPOLATION, "JOINT_INTERPOLATION"}
-    };
-    
-    if (!planAndExecute(move_group, approach_pose, SolverType::OMPL)) {
-        ROS_ERROR("Impossible de planifier la phase d'approche !");
-        return 1;
-    }
-    else ROS_INFO("Phase d'approche effectuée.");
+    //phase de grip
+    if (!moveToGraspPhase(move_group, cube_pose, n_local, in_plane_axis, 0.0, SolverType::OMPL, "grip")) return 1;
 
-    // Phase de grip
-    double grip_offset = 0.0;
-    geometry_msgs::Pose grip_pose = generateGraspPose(cube_pose, n_local, in_plane_axis, grip_offset);
 
-    if (!planAndExecute(move_group, grip_pose, SolverType::OMPL)) {
-        ROS_ERROR("Impossible de planifier la phase de grip !");
-        return 1;
-    }
-    else ROS_INFO("Phase de grip effectuée.");
-
-    // Fermer la pince
     double finger_target = getFingerTarget(cube_size, face_index);
     // Fermer la pince
     closeGripper(gripper_group, finger_target);
