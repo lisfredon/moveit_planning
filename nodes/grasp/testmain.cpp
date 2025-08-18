@@ -19,6 +19,8 @@
 #include "moveit_planning/load_utils.h"
 #include "moveit_planning/grasp_utils.h"
 #include "moveit_planning/add_object.h"
+#include "moveit_planning/attach_utils.h"
+#include "moveit_planning/close_gripper_utils.h"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
@@ -103,48 +105,13 @@ int main(int argc, char** argv) {
     }
     else ROS_INFO("Phase de grip effectuée.");
 
-    /*
     // Fermer la pince
-    gripper_group.setJointValueTarget(std::vector<double>{0.0, 0.0});
-    gripper_group.move();
+    double finger_target = getFingerTarget(cube_size, face_index);
+    // Fermer la pince
+    closeGripper(gripper_group, finger_target);
 
-    // Attacher l'objet
-    moveit_msgs::AttachedCollisionObject attached_object;
-    attached_object.link_name = move_group.getEndEffectorLink();
-    attached_object.object = cube;
-    attached_object.object.operation = attached_object.object.ADD;
-    planning_scene_interface.applyAttachedCollisionObject(attached_object);
-    */
-    
-    // Déterminer quelle dimension utiliser selon la face choisie
-    double object_width = 0.0;
-    switch(face_index) {
-        case 0: // +X
-        case 1: // -X
-            object_width = cube_size[0]; // largeur X
-            break;
-        case 2: // +Y
-        case 3: // -Y
-            object_width = cube_size[1]; // largeur Y
-            break;
-        case 4: // +Z
-        case 5: // -Z
-            object_width = cube_size[2]; // largeur Z
-            break;
-    }
-
-    double finger_target = object_width / 2.0;
-
-    // Fermer la pince à la bonne valeur
-    std::vector<double> gripper_targets = {finger_target, finger_target};
-    gripper_group.setJointValueTarget(gripper_targets);
-    gripper_group.move();
-
-    moveit_msgs::AttachedCollisionObject attached_object;
-    attached_object.link_name = move_group.getEndEffectorLink();
-    attached_object.object = cube;
-    attached_object.object.operation = attached_object.object.ADD;
-    planning_scene_interface.applyAttachedCollisionObject(attached_object);
+    // Attacher l’objet
+    attachObject(planning_scene_interface, move_group, cube);
 
     ros::shutdown();
 }
