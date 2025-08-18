@@ -1,7 +1,7 @@
 #include "moveit_planning/visualization_utils.h"
 #include <visualization_msgs/MarkerArray.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include "moveit_planning/grasp_utils.h"
+#include "moveit_planning/load_add_object.h"
 
 void publishFaceNormalsWithText(const geometry_msgs::Pose& cube_pose,
                                 const std::vector<tf2::Vector3>& face_normals,
@@ -72,7 +72,7 @@ void visualizeCubeFaces(
 {
     std::vector<tf2::Vector3> face_normals;
     for (int i = 0; i < 6; i++) {
-        face_normals.push_back(getNormalForFace(i));
+        face_normals.push_back(getNormalObject(i));
     }
     std::vector<std::string> face_names = {"+X","-X","+Y","-Y","+Z","-Z"};
     publishFaceNormalsWithText(pose, face_normals, face_names, marker_pub);

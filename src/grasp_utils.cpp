@@ -8,23 +8,6 @@
 #include <vector>
 #include <cmath>
 
-tf2::Vector3 getNormalForFace(int face_index) {
-    static std::vector<tf2::Vector3> normals = {
-        {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
-    };
-    return normals[face_index];
-}
-
-tf2::Vector3 getInPlaneAxis(int face_index, bool use_width) {
-    static std::vector<tf2::Vector3> width_axes = {
-        {0,0,1},{0,0,1},{1,0,0},{1,0,0},{1,0,0},{1,0,0}
-    };
-    static std::vector<tf2::Vector3> length_axes = {
-        {0,1,0},{0,1,0},{0,0,1},{0,0,1},{0,1,0},{0,1,0}
-    };
-    return use_width ? width_axes[face_index] : length_axes[face_index];
-}
-
 geometry_msgs::Pose generateGraspPose(
     const geometry_msgs::Pose& cube_pose,
     const tf2::Vector3& n_local,

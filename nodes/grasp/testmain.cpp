@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
     // Choix de la face et de l'orientation dans le plan
     int face_index = 5; // 0:+X, 1:-X, 2:+Y, ...
     bool use_width = false; // true = "largeur", false = "longueur"
-    tf2::Vector3 n_local = getNormalForFace(face_index);
-    tf2::Vector3 in_plane_axis = getInPlaneAxis(face_index, use_width);
+    tf2::Vector3 n_local = getNormalObject(face_index);
+    tf2::Vector3 in_plane_axis = getObjectAxis(face_index, use_width);
     
     //Visualisation des axes du cube pour debug 
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube", 1, true);

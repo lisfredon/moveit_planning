@@ -83,3 +83,20 @@ moveit_msgs::CollisionObject addObjectToScene(moveit::planning_interface::Planni
     // Retourner l'objet pour pouvoir l'utiliser ailleurs (ex. attacher)
     return object;
 }
+
+tf2::Vector3 getNormalObject(int face_index) {
+    static std::vector<tf2::Vector3> normals = {
+        {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
+    };
+    return normals[face_index];
+}
+
+tf2::Vector3 getObjectAxis(int face_index, bool use_width) {
+    static std::vector<tf2::Vector3> width_axes = {
+        {0,0,1},{0,0,1},{1,0,0},{1,0,0},{1,0,0},{1,0,0}
+    };
+    static std::vector<tf2::Vector3> length_axes = {
+        {0,1,0},{0,1,0},{0,0,1},{0,0,1},{0,1,0},{0,1,0}
+    };
+    return use_width ? width_axes[face_index] : length_axes[face_index];
+}
