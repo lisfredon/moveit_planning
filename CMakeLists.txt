@@ -38,7 +38,7 @@ catkin_package(
 add_library(moveit_utils src/utils.cpp)
 target_link_libraries(moveit_utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(approch_utils src/approch_utils.cpp src/attach_utils.cpp src/close_gripper_utils.cpp src/grasp_utils.cpp src/add_object.cpp src/retreat_utils.cpp src/solvers_utils.cpp src/load_utils.cpp src/config_utils.cpp src/visualization_utils.cpp src/pipeline.cpp) 
+add_library(approch_utils src/approch_utils.cpp src/attach_utils.cpp src/close_gripper_utils.cpp src/grasp_utils.cpp src/load_add_object.cpp src/retreat_utils.cpp src/solvers_utils.cpp src/config_utils.cpp src/visualization_utils.cpp src/pipeline.cpp) 
 target_link_libraries(approch_utils PUBLIC ${catkin_LIBRARIES})
 
 ###############

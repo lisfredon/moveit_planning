@@ -39,7 +39,9 @@ std::vector<geometry_msgs::Pose> generateGraspPoses(
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Vector3.h>
 
+tf2::Vector3 getNormalForFace(int face_index);
 
+tf2::Vector3 getInPlaneAxis(int face_index, bool use_width);
 //geometry_msgs::Pose generateAlignedGraspPose(const geometry_msgs::Pose& cube_pose);
 geometry_msgs::Pose generateGraspPose(
     const geometry_msgs::Pose& cube_pose,

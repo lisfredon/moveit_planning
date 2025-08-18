@@ -16,9 +16,8 @@
 
 #include "moveit_planning/solvers_utils.h"
 #include "moveit_planning/visualization_utils.h"
-#include "moveit_planning/load_utils.h"
 #include "moveit_planning/grasp_utils.h"
-#include "moveit_planning/add_object.h"
+#include "moveit_planning/load_add_object.h"
 #include "moveit_planning/attach_utils.h"
 #include "moveit_planning/close_gripper_utils.h"
 
@@ -33,47 +32,22 @@ int main(int argc, char** argv) {
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
     // Charger cube
-    std::vector<double> cube_size = loadObjectSizeParam("/cube/size");
-    geometry_msgs::Pose cube_pose = loadParam("/cube");
+    std::vector<double> cube_size = loadObjectSize("/cube/size");
+    geometry_msgs::Pose cube_pose = loadObjectPose("/cube");
 
     // Ajouter cube à MoveIt
     moveit_msgs::CollisionObject cube = addObjectToScene(planning_scene_interface, "cube", cube_pose, cube_size, move_group.getPlanningFrame());
 
-    // Normales locales des faces du cube
-    std::vector<tf2::Vector3> face_normals = {
-        tf2::Vector3(1,0,0),  tf2::Vector3(-1,0,0),
-        tf2::Vector3(0,1,0),  tf2::Vector3(0,-1,0),
-        tf2::Vector3(0,0,1),  tf2::Vector3(0,0,-1)
-    };
-
-    // Axes "largeur"
-    std::vector<tf2::Vector3> in_plane_axes_width = {
-        tf2::Vector3(0,0,1),  // +X
-        tf2::Vector3(0,0,1),  // -X
-        tf2::Vector3(1,0,0),  // +Y
-        tf2::Vector3(1,0,0),  // -Y
-        tf2::Vector3(1,0,0),  // +Z
-        tf2::Vector3(1,0,0)   // -Z
-    };
-
-    // Axes "longueur" (orthogonal à largeur et normale)
-    std::vector<tf2::Vector3> in_plane_axes_length = {
-        tf2::Vector3(0,1,0),  // +X
-        tf2::Vector3(0,1,0),  // -X
-        tf2::Vector3(0,0,1),  // +Y
-        tf2::Vector3(0,0,1),  // -Y
-        tf2::Vector3(0,1,0),  // +Z
-        tf2::Vector3(0,1,0)   // -Z
-    };
-
     // Choix de la face et de l'orientation dans le plan
     int face_index = 5; // 0:+X, 1:-X, 2:+Y, ...
     bool use_width = false; // true = "largeur", false = "longueur"
-    tf2::Vector3 n_local = face_normals[face_index];
-    tf2::Vector3 in_plane_axis = use_width ? 
-        in_plane_axes_width[face_index] : 
-        in_plane_axes_length[face_index];
+    tf2::Vector3 n_local = getNormalForFace(face_index);
+    tf2::Vector3 in_plane_axis = getInPlaneAxis(face_index, use_width);
 
+    std::vector<tf2::Vector3> face_normals;
+    for (int i = 0; i < 6; i++) {
+        face_normals.push_back(getNormalForFace(i));
+    }
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube", 1, true);
     std::vector<std::string> face_names = {"+X","-X","+Y","-Y","+Z","-Z"};
     publishFaceNormalsWithText(cube_pose, face_normals, face_names, marker_pub);

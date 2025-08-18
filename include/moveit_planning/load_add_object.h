@@ -1,14 +1,19 @@
-#ifndef ADD_OBJECT_H
-#define ADD_OBJECT_H
+#ifndef LOAD_ADD_OBJECT_H
+#define LOAD_ADD_OBJECT_H
 
-#include <geometry_msgs/Pose.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <geometry_msgs/Pose.h>
 #include <shape_msgs/SolidPrimitive.h>
 #include <vector>
 #include <string>
 #include <moveit_msgs/CollisionObject.h> 
-#include <string>
+#include <tf2/LinearMath/Vector3.h>
+#include <ros/ros.h>
+
+geometry_msgs::Pose loadObjectPose(const std::string& param_namespace);
+
+std::vector<double> loadObjectSize(const std::string& param_name);
+
 
 moveit_msgs::CollisionObject addObjectToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
                                               const std::string& object_id,
