@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
     }
     else ROS_INFO("Phase de grip effectuée.");
 
+    /*
     // Fermer la pince
     gripper_group.setJointValueTarget(std::vector<double>{0.0, 0.0});
     gripper_group.move();
@@ -113,7 +114,8 @@ int main(int argc, char** argv) {
     attached_object.object = cube;
     attached_object.object.operation = attached_object.object.ADD;
     planning_scene_interface.applyAttachedCollisionObject(attached_object);
-
+    */
+    
     // Déterminer quelle dimension utiliser selon la face choisie
     double object_width = 0.0;
     switch(face_index) {
@@ -138,6 +140,11 @@ int main(int argc, char** argv) {
     gripper_group.setJointValueTarget(gripper_targets);
     gripper_group.move();
 
+    moveit_msgs::AttachedCollisionObject attached_object;
+    attached_object.link_name = move_group.getEndEffectorLink();
+    attached_object.object = cube;
+    attached_object.object.operation = attached_object.object.ADD;
+    planning_scene_interface.applyAttachedCollisionObject(attached_object);
 
     ros::shutdown();
 }
