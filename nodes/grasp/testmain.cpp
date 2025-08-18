@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     geometry_msgs::Pose cube_pose = loadParam("/cube");
 
     // Ajouter cube à MoveIt
-    addObjectToScene(planning_scene_interface, "cube", cube_pose, cube_size);
+    moveit_msgs::CollisionObject cube = addObjectToScene(planning_scene_interface, "cube", cube_pose, cube_size, move_group.getPlanningFrame());
 
     // Normales locales des faces du cube
     std::vector<tf2::Vector3> face_normals = {
@@ -73,7 +73,6 @@ int main(int argc, char** argv) {
         in_plane_axes_length[face_index];
 
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube", 1, true);
-
     std::vector<std::string> face_names = {"+X","-X","+Y","-Y","+Z","-Z"};
     publishFaceNormalsWithText(cube_pose, face_normals, face_names, marker_pub);
 
@@ -103,6 +102,42 @@ int main(int argc, char** argv) {
         return 1;
     }
     else ROS_INFO("Phase de grip effectuée.");
+
+    // Fermer la pince
+    gripper_group.setJointValueTarget(std::vector<double>{0.0, 0.0});
+    gripper_group.move();
+
+    // Attacher l'objet
+    moveit_msgs::AttachedCollisionObject attached_object;
+    attached_object.link_name = move_group.getEndEffectorLink();
+    attached_object.object = cube;
+    attached_object.object.operation = attached_object.object.ADD;
+    planning_scene_interface.applyAttachedCollisionObject(attached_object);
+
+    // Déterminer quelle dimension utiliser selon la face choisie
+    double object_width = 0.0;
+    switch(face_index) {
+        case 0: // +X
+        case 1: // -X
+            object_width = cube_size[0]; // largeur X
+            break;
+        case 2: // +Y
+        case 3: // -Y
+            object_width = cube_size[1]; // largeur Y
+            break;
+        case 4: // +Z
+        case 5: // -Z
+            object_width = cube_size[2]; // largeur Z
+            break;
+    }
+
+    double finger_target = object_width / 2.0;
+
+    // Fermer la pince à la bonne valeur
+    std::vector<double> gripper_targets = {finger_target, finger_target};
+    gripper_group.setJointValueTarget(gripper_targets);
+    gripper_group.move();
+
 
     ros::shutdown();
 }
