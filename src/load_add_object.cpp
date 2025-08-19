@@ -56,6 +56,16 @@ std::vector<double> loadObjectSize(const std::string& param_name) {
     return size;
 }
 
+std::string loadObjectID(const std::string& param_name) {
+    std::string id;
+    if (!ros::param::get(param_name, id)) {
+        ROS_ERROR_STREAM("Impossible de charger l'ID de l'objet : " << param_name);
+        return ""; // ou throw std::runtime_error si tu veux forcer l'arrêt
+    }
+    return id;
+}
+
+
 moveit_msgs::CollisionObject addObjectToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
                                               const std::string& object_id,
                                               const geometry_msgs::Pose& object_pose,

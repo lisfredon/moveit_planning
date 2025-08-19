@@ -18,8 +18,7 @@
 #include "moveit_planning/visualization_utils.h"
 #include "moveit_planning/grasp_utils.h"
 #include "moveit_planning/load_add_object.h"
-#include "moveit_planning/attach_utils.h"
-#include "moveit_planning/close_gripper_utils.h"
+#include "moveit_planning/robot_utils.h"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
@@ -31,35 +30,62 @@ int main(int argc, char** argv) {
     moveit::planning_interface::MoveGroupInterface gripper_group("panda_hand");
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
-    // Charger cube
-    auto cube_size = loadObjectSize("/cube/size");
-    auto cube_pose = loadObjectPose("/cube");
+    // Charger objet
+    auto objet_size = loadObjectSize("/cube/size");
+    auto objet_pose = loadObjectPose("/cube");
+    auto object_id = loadObjectID("/cube/id");
 
-    // Ajouter cube à MoveIt
-    auto cube = addObjectToScene(planning_scene_interface, "cube", cube_pose, cube_size, move_group.getPlanningFrame());
+    // Ajouter objet à MoveIt
+    auto objet = addObjectToScene(planning_scene_interface, object_id, objet_pose, objet_size, move_group.getPlanningFrame());
 
     // Choix de la face et de l'orientation dans le plan
     int face_index = 5; // 0:+X, 1:-X, 2:+Y, ...
     tf2::Vector3 n_local = getNormalObject(face_index);
     tf2::Vector3 in_plane_axis = getObjectAxis(face_index, false);// true = "largeur", false = "longueur"
     
-    //Visualisation des axes du cube pour debug 
-    ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cube", 1, true);
-    visualizeCubeFaces(marker_pub, cube_pose);
+    //Visualisation des axes de l'objet pour debug 
+    ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>(object_id, 1, true);
+    visualizeCubeFaces(marker_pub, objet_pose);
 
     // Phase d'approche
-    if (!moveToGraspPhase(move_group, cube_pose, n_local, in_plane_axis, 0.05, SolverType::OMPL, "approche")) return 1;
-
+    if (!moveToGraspPhase(move_group, objet_pose, n_local, in_plane_axis, 0.05, SolverType::OMPL, "approche")) return 1;
+    
     //phase de grip
-    if (!moveToGraspPhase(move_group, cube_pose, n_local, in_plane_axis, 0.0, SolverType::OMPL, "grip")) return 1;
-
-
-    double finger_target = getFingerTarget(cube_size, face_index);
-    // Fermer la pince
-    closeGripper(gripper_group, finger_target);
+    if (!grip(move_group, gripper_group, objet_pose, objet_size, n_local, in_plane_axis, face_index)) {
+        ROS_ERROR("Échec de la phase de grip !");
+        return 1;
+    }
 
     // Attacher l’objet
-    attachObject(planning_scene_interface, move_group, cube);
+    std::string hand_link = "panda_hand";
+    std::vector<std::string> touch_links = {"panda_hand", "panda_leftfinger", "panda_rightfinger"};
+    attachObject(move_group, object_id, hand_link, touch_links);
+
+
+    // Charger la pose goal depuis yaml
+    auto goal_pose = loadObjectPose("/goal");
+
+    // Déplacement vers le goal
+    moveit::planning_interface::MoveGroupInterface::Plan plan_to_goal;
+    move_group.setPoseTarget(goal_pose);
+
+
+    bool success = (move_group.plan(plan_to_goal) == 
+                    moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+    if (success) {
+        move_group.execute(plan_to_goal);
+        ROS_INFO("Cube déplacé à la position goal !");
+    } else {
+        ROS_ERROR("Échec du plan vers la position goal !");
+    }
+
+    // Ouvrir la pince pour déposer l'objet
+    openGripper(gripper_group);
+
+    // Détacher l’objet
+    detachObject(planning_scene_interface, move_group, object_id);
+
 
     ros::shutdown();
 }

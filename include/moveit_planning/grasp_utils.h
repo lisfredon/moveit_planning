@@ -42,7 +42,8 @@ std::vector<geometry_msgs::Pose> generateGraspPoses(
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include "moveit_planning/solvers_utils.h"
-#include "moveit_planning/close_gripper_utils.h"
+
+#include <moveit_msgs/AttachedCollisionObject.h>
 
 //geometry_msgs::Pose generateAlignedGraspPose(const geometry_msgs::Pose& cube_pose);
 geometry_msgs::Pose generateGraspPose(
@@ -50,6 +51,9 @@ geometry_msgs::Pose generateGraspPose(
     const tf2::Vector3& n_local,
     const tf2::Vector3& grasp_in_plane_axis,
     double offset = 0.0);
+
+double getFingerTarget(const std::vector<double>& cube_size, int face_index);
+void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group, double target);
 
 bool moveToGraspPhase(
     moveit::planning_interface::MoveGroupInterface& move_group,
@@ -59,5 +63,13 @@ bool moveToGraspPhase(
     double offset,
     SolverType solver,
     const std::string& phase_name);
+
+bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
+        moveit::planning_interface::MoveGroupInterface& gripper_group,
+        const geometry_msgs::Pose& obj_pose,
+        const std::vector<double>& obj_size,
+        const tf2::Vector3& n_local,
+        const tf2::Vector3& in_plane_axis,
+        int face_index);
 
 #endif  // MOVEIT_PLANNING_GRASP_UTILS_H
