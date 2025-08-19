@@ -19,7 +19,7 @@
 #include "moveit_planning/grasp_utils.h"
 #include "moveit_planning/load_add_object.h"
 #include "moveit_planning/robot_utils.h"
-#include "moveit_planning/move_to_goal.h"
+#include "moveit_planning/moveTo_utils.h"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
@@ -58,7 +58,9 @@ int main(int argc, char** argv) {
     }
 
     // Phase d'approche
-    if (!moveToGraspPhase(move_group, objet_pose, n_local, in_plane_axis, 0.05, SolverType::OMPL, "approche")) return 1;
+    geometry_msgs::Pose target_pose = generateGraspPose(objet_pose, n_local, in_plane_axis, 0.05);
+    if (!moveTo(move_group, target_pose, SolverType::OMPL, "approche")) return 1;
+    //if (!moveToGraspPhase(move_group, objet_pose, n_local, in_plane_axis, 0.05, SolverType::OMPL, "approche")) return 1;
     
     //phase de grip
     if (!grip(move_group, gripper_group, objet_pose, objet_size, n_local, in_plane_axis, face_index)) {
@@ -74,10 +76,7 @@ int main(int argc, char** argv) {
 
     // Déplacement vers le goal
     auto goal_pose = loadObjectPose("/goal");
-    if (!moveToGoal(move_group, goal_pose)) {
-        ROS_ERROR("Échec du déplacement vers le goal !");
-        return 1;
-    }
+    if (!moveTo(move_group, goal_pose, SolverType::OMPL, "déplacement vers la target")) return 1;
 
     // Ouvrir la pince pour déposer l'objet
     openGripper(gripper_group);

@@ -130,24 +130,6 @@ void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group,
     gripper_group.move();
 }
 
-bool moveToGraspPhase(
-    moveit::planning_interface::MoveGroupInterface& move_group,
-    const geometry_msgs::Pose& obj_pose,
-    const tf2::Vector3& normal,
-    const tf2::Vector3& in_plane,
-    double offset,
-    SolverType solver,
-    const std::string& phase_name)
-{
-    geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, normal, in_plane, offset);
-    if (!planAndExecute(move_group, target_pose, solver)) {
-        ROS_ERROR_STREAM("Impossible de planifier la phase de " << phase_name << " !");
-        return false;
-    }
-    ROS_INFO_STREAM("Phase de " << phase_name << " effectuée.");
-    return true;
-}
-
 bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
         moveit::planning_interface::MoveGroupInterface& gripper_group,
         const geometry_msgs::Pose& obj_pose,
@@ -156,7 +138,8 @@ bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
         const tf2::Vector3& in_plane_axis,
         int face_index)
 {
-    if (!moveToGraspPhase(move_group, obj_pose, n_local, in_plane_axis, 0.0, SolverType::OMPL, "grip")) return false;
+    geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, n_local, in_plane_axis, 0.0);
+    if (!moveTo(move_group, target_pose, SolverType::OMPL, "grip")) return false;
     
     //Fermer la pince
     double finger_target = getFingerTarget(obj_size, face_index);
@@ -164,3 +147,4 @@ bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
     ROS_INFO_STREAM("Fermeture du grip reussie");
     return true;
 }
+
