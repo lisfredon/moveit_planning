@@ -39,9 +39,10 @@ int main(int argc, char** argv) {
     auto objet = addObjectToScene(planning_scene_interface, object_id, objet_pose, objet_size, move_group.getPlanningFrame());
 
     // Choix de la face et de l'orientation dans le plan
-    int face_index = 5; // 0:+X, 1:-X, 2:+Y, ...
+    auto face_index = loadGoalFace("/how_take_cube/choice_face");
     tf2::Vector3 n_local = getNormalObject(face_index);
-    tf2::Vector3 in_plane_axis = getObjectAxis(face_index, false);// true = "largeur", false = "longueur"
+    auto side_face = loadSideFace("/how_take_cube/side_face");
+    tf2::Vector3 in_plane_axis = getObjectAxis(face_index, side_face);
     
     //Visualisation des axes de l'objet pour debug 
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>(object_id, 1, true);

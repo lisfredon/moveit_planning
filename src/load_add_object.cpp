@@ -60,10 +60,29 @@ std::string loadObjectID(const std::string& param_name) {
     std::string id;
     if (!ros::param::get(param_name, id)) {
         ROS_ERROR_STREAM("Impossible de charger l'ID de l'objet : " << param_name);
-        return ""; // ou throw std::runtime_error si tu veux forcer l'arrêt
+        return ""; 
     }
     return id;
 }
+
+std::string loadSideFace(const std::string& param_name) {
+    std::string side_face;
+    if (!ros::param::get(param_name, side_face)) {
+        ROS_ERROR_STREAM("Impossible de charger le coté de saisie souhaité : " << param_name);
+        return ""; 
+    }
+    return side_face;
+}
+
+int loadGoalFace(const std::string& param_name) {
+    int choice_face;
+    if (!ros::param::get(param_name, choice_face)) {
+        ROS_ERROR_STREAM("Impossible de charger la face de saisie souhaité : " << param_name);
+        return {}; 
+    }
+    return choice_face;
+}
+
 
 
 moveit_msgs::CollisionObject addObjectToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
@@ -101,12 +120,23 @@ tf2::Vector3 getNormalObject(int face_index) {
     return normals[face_index];
 }
 
-tf2::Vector3 getObjectAxis(int face_index, bool use_width) {
-    static std::vector<tf2::Vector3> width_axes = {
-        {0,0,1},{0,0,1},{1,0,0},{1,0,0},{1,0,0},{1,0,0}
+tf2::Vector3 getObjectAxis(int face_index, const std::string& side_face) {
+    static const std::vector<tf2::Vector3> width_axes = {
+        {0,0,1}, {0,0,1}, {1,0,0}, {1,0,0}, {1,0,0}, {1,0,0}
     };
-    static std::vector<tf2::Vector3> length_axes = {
-        {0,1,0},{0,1,0},{0,0,1},{0,0,1},{0,1,0},{0,1,0}
+    static const std::vector<tf2::Vector3> length_axes = {
+        {0,1,0}, {0,1,0}, {0,0,1}, {0,0,1}, {0,1,0}, {0,1,0}
     };
-    return use_width ? width_axes[face_index] : length_axes[face_index];
+
+    if (face_index < 0 || face_index >= static_cast<int>(width_axes.size())) {
+        throw std::out_of_range("face_index invalide : doit être entre 0 et 5");
+    }
+
+    if (side_face == "width") {
+        return width_axes[face_index];
+    } else if (side_face == "length") {
+        return length_axes[face_index];
+    } else {
+        throw std::invalid_argument("side_face invalide : doit être 'width' ou 'length'");
+    }
 }
