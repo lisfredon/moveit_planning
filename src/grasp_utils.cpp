@@ -130,6 +130,17 @@ void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group,
     gripper_group.move();
 }
 
+bool approch(moveit::planning_interface::MoveGroupInterface& move_group,
+        moveit::planning_interface::MoveGroupInterface& gripper_group,
+        const geometry_msgs::Pose& obj_pose,
+        const tf2::Vector3& n_local,
+        const tf2::Vector3& in_plane_axis)
+{
+    geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, n_local, in_plane_axis, 0.05);
+    if (!moveTo(move_group, target_pose, SolverType::OMPL, "approche")) return 1;
+    return true;
+}
+
 bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
         moveit::planning_interface::MoveGroupInterface& gripper_group,
         const geometry_msgs::Pose& obj_pose,
@@ -139,7 +150,7 @@ bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
         int face_index)
 {
     geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, n_local, in_plane_axis, 0.0);
-    if (!moveTo(move_group, target_pose, SolverType::OMPL, "grip")) return false;
+    if (!moveTo(move_group, target_pose, SolverType::OMPL, "préhension")) return false;
     
     //Fermer la pince
     double finger_target = getFingerTarget(obj_size, face_index);

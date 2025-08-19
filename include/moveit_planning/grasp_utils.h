@@ -59,6 +59,12 @@ geometry_msgs::Pose generateGraspPose(
 double getFingerTarget(const std::vector<double>& cube_size, int face_index);
 void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group, double target);
 
+bool approch(moveit::planning_interface::MoveGroupInterface& move_group,
+        moveit::planning_interface::MoveGroupInterface& gripper_group,
+        const geometry_msgs::Pose& obj_pose,
+        const tf2::Vector3& n_local,
+        const tf2::Vector3& in_plane_axis);
+
 bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
         moveit::planning_interface::MoveGroupInterface& gripper_group,
         const geometry_msgs::Pose& obj_pose,

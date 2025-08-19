@@ -58,15 +58,10 @@ int main(int argc, char** argv) {
     }
 
     // Phase d'approche
-    geometry_msgs::Pose target_pose = generateGraspPose(objet_pose, n_local, in_plane_axis, 0.05);
-    if (!moveTo(move_group, target_pose, SolverType::OMPL, "approche")) return 1;
-    //if (!moveToGraspPhase(move_group, objet_pose, n_local, in_plane_axis, 0.05, SolverType::OMPL, "approche")) return 1;
+    approch(move_group, gripper_group, objet_pose, n_local, in_plane_axis);
     
     //phase de grip
-    if (!grip(move_group, gripper_group, objet_pose, objet_size, n_local, in_plane_axis, face_index)) {
-        ROS_ERROR("Échec de la préhension");
-        return 1;
-    }
+    grip(move_group, gripper_group, objet_pose, objet_size, n_local, in_plane_axis, face_index);
 
     // Attacher l’objet
     std::string hand_link = "panda_hand";
