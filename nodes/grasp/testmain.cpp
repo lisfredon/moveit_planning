@@ -19,6 +19,7 @@
 #include "moveit_planning/grasp_utils.h"
 #include "moveit_planning/load_add_object.h"
 #include "moveit_planning/robot_utils.h"
+#include "moveit_planning/move_to_goal.h"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
@@ -53,7 +54,7 @@ int main(int argc, char** argv) {
     
     //phase de grip
     if (!grip(move_group, gripper_group, objet_pose, objet_size, n_local, in_plane_axis, face_index)) {
-        ROS_ERROR("Échec de la phase de grip !");
+        ROS_ERROR("Échec de la préhension");
         return 1;
     }
 
@@ -63,22 +64,11 @@ int main(int argc, char** argv) {
     attachObject(move_group, object_id, hand_link, touch_links);
 
 
-    // Charger la pose goal depuis yaml
-    auto goal_pose = loadObjectPose("/goal");
-
     // Déplacement vers le goal
-    moveit::planning_interface::MoveGroupInterface::Plan plan_to_goal;
-    move_group.setPoseTarget(goal_pose);
-
-
-    bool success = (move_group.plan(plan_to_goal) == 
-                    moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-    if (success) {
-        move_group.execute(plan_to_goal);
-        ROS_INFO("Cube déplacé à la position goal !");
-    } else {
-        ROS_ERROR("Échec du plan vers la position goal !");
+    auto goal_pose = loadObjectPose("/goal");
+    if (!moveToGoal(move_group, goal_pose)) {
+        ROS_ERROR("Échec du déplacement vers le goal !");
+        return 1;
     }
 
     // Ouvrir la pince pour déposer l'objet
@@ -86,7 +76,6 @@ int main(int argc, char** argv) {
 
     // Détacher l’objet
     detachObject(planning_scene_interface, move_group, object_id);
-
 
     ros::shutdown();
 }
