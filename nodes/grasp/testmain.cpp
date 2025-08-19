@@ -49,6 +49,14 @@ int main(int argc, char** argv) {
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>(object_id, 1, true);
     visualizeCubeFaces(marker_pub, objet_pose);
 
+
+    // Vérifier si la préhension est possible avant de déplacer le robot
+    double max_opening = getMaxFingerOpening(gripper_group);
+    if (!isFaceGraspable(objet_size, face_index, side_face, max_opening)) {
+        ROS_ERROR("Objet trop gros pour la pince du robot !");
+        return 1;
+    }
+
     // Phase d'approche
     if (!moveToGraspPhase(move_group, objet_pose, n_local, in_plane_axis, 0.05, SolverType::OMPL, "approche")) return 1;
     

@@ -8,6 +8,61 @@
 #include <vector>
 #include <cmath>
 
+bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const std::string& side_face, double max_finger_opening) {
+    double grasp_dim = 0.0;
+
+    // Mapping des faces :
+    // 0:+X, 1:-X, 2:+Y, 3:-Y, 4:+Z, 5:-Z
+    switch(face_index) {
+        case 0: // +X
+        case 1: // -X
+            // Plan YZ
+            grasp_dim = (side_face == "width") ? obj_size[1] : obj_size[2];
+            break;
+
+        case 2: // +Y
+        case 3: // -Y
+            // Plan XZ
+            grasp_dim = (side_face == "width") ? obj_size[0] : obj_size[2];
+            break;
+
+        case 4: // +Z
+        case 5: // -Z
+            // Plan XY
+            grasp_dim = (side_face == "width") ? obj_size[0] : obj_size[1];
+            break;
+
+        default:
+            ROS_ERROR("Face index invalide !");
+            return false;
+    }
+
+    ROS_INFO_STREAM("Face " << face_index 
+                    << " avec side_face=" << side_face 
+                    << " → dimension testée=" << grasp_dim 
+                    << ", ouverture max pince=" << max_finger_opening);
+
+    return grasp_dim <= max_finger_opening;
+}
+
+
+
+double getMaxFingerOpening(moveit::planning_interface::MoveGroupInterface& gripper_group) {
+    auto joint_model_group = gripper_group.getRobotModel()->getJointModelGroup(gripper_group.getName());
+    const std::vector<const moveit::core::JointModel*>& joints = joint_model_group->getActiveJointModels();
+
+    double max_opening = 0.0;
+    for (const auto& joint : joints) {
+        const auto& bounds = joint->getVariableBounds(joint->getName());
+        if (bounds.position_bounded_) {
+            double joint_max = bounds.max_position_;
+            if (joint_max > max_opening) max_opening = joint_max;
+        }
+    }
+    return max_opening*2;
+}
+
+
 geometry_msgs::Pose generateGraspPose(
     const geometry_msgs::Pose& cube_pose,
     const tf2::Vector3& n_local,

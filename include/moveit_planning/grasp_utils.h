@@ -45,6 +45,9 @@ std::vector<geometry_msgs::Pose> generateGraspPoses(
 
 #include <moveit_msgs/AttachedCollisionObject.h>
 
+bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const std::string& side_face, double max_finger_opening);
+
+double getMaxFingerOpening(moveit::planning_interface::MoveGroupInterface& gripper_group);
 //geometry_msgs::Pose generateAlignedGraspPose(const geometry_msgs::Pose& cube_pose);
 geometry_msgs::Pose generateGraspPose(
     const geometry_msgs::Pose& cube_pose,

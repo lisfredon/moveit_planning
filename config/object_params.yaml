@@ -10,9 +10,9 @@ table:
   orientation: [0.0, 0.0, 0.0, 1.0]
 
 how_take_cube : 
-  choice_face: 5 # 0:+X, 1:-X, 2:+Y, ...
+  choice_face: 2 # 0:+X, 1:-X, 2:+Y, ...
   side_face : length # width or length
 
 goal:
-  position: [0.4, 0.1, 0.3]
-  orientation: [0.0, 0.0, 0.0, 1.0]
+  position: [0.4, 0.5, 0.3]
+  orientation: [0.0, 0.0, 0.2, 1.0]
