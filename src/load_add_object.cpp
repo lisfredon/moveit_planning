@@ -121,22 +121,26 @@ tf2::Vector3 getNormalObject(int face_index) {
 }
 
 tf2::Vector3 getObjectAxis(int face_index, const std::string& side_face) {
-    static const std::vector<tf2::Vector3> width_axes = {
-        {0,0,1}, {0,0,1}, {1,0,0}, {1,0,0}, {1,0,0}, {1,0,0}
-    };
-    static const std::vector<tf2::Vector3> length_axes = {
-        {0,1,0}, {0,1,0}, {0,0,1}, {0,0,1}, {0,1,0}, {0,1,0}
-    };
+    static const std::vector<tf2::Vector3> width_high_axes  = {{0,0,1}, {0,0,1}, {1,0,0}, {1,0,0}, {1,0,0}, {1,0,0}};
+    static const std::vector<tf2::Vector3> width_down_axes  = {{0,0,-1}, {0,0,-1}, {-1,0,0}, {-1,0,0}, {-1,0,0}, {-1,0,0}};
+    static const std::vector<tf2::Vector3> length_high_axes = {{0,1,0}, {0,1,0}, {0,0,1}, {0,0,1}, {0,1,0}, {0,1,0}};
+    static const std::vector<tf2::Vector3> length_down_axes = {{0,-1,0}, {0,-1,0}, {0,0,-1}, {0,0,-1}, {0,-1,0}, {0,-1,0}};
 
-    if (face_index < 0 || face_index >= static_cast<int>(width_axes.size())) {
+    if (face_index < 0 || face_index >= static_cast<int>(width_high_axes.size())) {
         throw std::out_of_range("face_index invalide : doit être entre 0 et 5");
     }
 
-    if (side_face == "width") {
-        return width_axes[face_index];
-    } else if (side_face == "length") {
-        return length_axes[face_index];
+    if (side_face == "width_high") {
+        return width_high_axes[face_index];
+    } else if (side_face == "width_down") {
+        return width_down_axes[face_index];
+    } else if (side_face == "length_high") {
+        return length_high_axes[face_index];
+    } else if (side_face == "length_down") {
+        return length_down_axes[face_index];
     } else {
-        throw std::invalid_argument("side_face invalide : doit être 'width' ou 'length'");
+        throw std::invalid_argument(
+            "side_face invalide : doit être 'width_high', 'width_down', 'length_high' ou 'length_down'"
+        );
     }
 }

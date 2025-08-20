@@ -22,19 +22,19 @@ bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const 
         case 0: // +X
         case 1: // -X
             // Plan YZ
-            grasp_dim = (side_face == "width") ? obj_size[1] : obj_size[2];
+            grasp_dim = (side_face == "width_high" || side_face == "width_down") ? obj_size[1] : obj_size[2];
             break;
 
         case 2: // +Y
         case 3: // -Y
             // Plan XZ
-            grasp_dim = (side_face == "width") ? obj_size[0] : obj_size[2];
+            grasp_dim = (side_face == "width_high" || side_face == "width_down") ? obj_size[0] : obj_size[2];
             break;
 
         case 4: // +Z
         case 5: // -Z
             // Plan XY
-            grasp_dim = (side_face == "width") ? obj_size[0] : obj_size[1];
+            grasp_dim = (side_face == "width_high" || side_face == "width_down") ? obj_size[0] : obj_size[1];
             break;
 
         default:
@@ -154,7 +154,8 @@ bool chooseGraspFace(
     bool has_side = nh.getParam("/how_take_cube/side_face", side_face_param);
 
     std::vector<int> faces;
-    std::vector<std::string> sides = {"width", "length"};
+    std::vector<std::string> all_sides = {"width_high", "width_down", "length_high", "length_down"}
+;
 
     if (has_face) {
         faces = {face_index_param};
@@ -164,39 +165,47 @@ bool chooseGraspFace(
         ROS_WARN("Aucune face_index fournie → test aléatoire des faces.");
     }
 
+    std::vector<std::string> sides;
     if (has_side) {
         sides = {side_face_param};
     } else {
+        sides = all_sides;
         std::shuffle(sides.begin(), sides.end(), std::mt19937(std::random_device{}()));
-        ROS_WARN("Aucun side_face fourni → test aléatoire entre width et length.");
+        ROS_WARN("Aucun side_face fourni → test aléatoire entre width_high', 'width_down', 'length_high' et'length_down'.");
     }
 
     double max_opening = getMaxFingerOpening(gripper_group);
+    // On met toutes les combinaisons dans une file
+    std::vector<std::pair<int,std::string>> candidates;
+    for (int f : faces)
+        for (auto& s : sides)
+            candidates.emplace_back(f,s);
 
-    // Essayer toutes les combinaisons
-    for (int face_index : faces) {
-        for (const auto& side_face : sides) {
+    // Tant qu’il reste des candidats
+    while (!candidates.empty()) {
+        auto [face_index, side_face] = candidates.back();
+        candidates.pop_back();
 
-            ROS_INFO_STREAM(">>> Test face " << face_index 
-                            << " avec side=" << side_face);
+        ROS_INFO_STREAM(">>> Test face " << face_index 
+                        << " avec side=" << side_face);
 
-            if (!isFaceGraspable(objet_size, face_index, side_face, max_opening)) {
-                ROS_WARN("Face non saisissable, on passe à la suivante.");
-                continue;
-            }
-
-            // Succès géométrique
-            result.face_index = face_index;
-            result.side_face = side_face;
-            result.n_local = getNormalObject(face_index);
-            result.in_plane_axis = getObjectAxis(face_index, side_face);
-
-            ROS_INFO_STREAM(">>> Face choisie = " << face_index 
-                            << " avec side=" << side_face);
-            return true;
+        // Vérification géométrique
+        if (!isFaceGraspable(objet_size, face_index, side_face, 0.07)) {
+            ROS_WARN("Face non saisissable, on passe à la suivante.");
+            continue;
         }
+
+        // Succès total → on retourne
+        result.face_index = face_index;
+        result.side_face = side_face;
+        result.n_local = getNormalObject(face_index);
+        result.in_plane_axis = getObjectAxis(face_index, side_face);
+
+        ROS_INFO_STREAM(">>> Face choisie = " << face_index 
+                        << " avec side=" << side_face);
+        return true;
     }
 
-    ROS_ERROR("Aucune face géométriquement saisissable !");
+    ROS_ERROR("Aucune combinaison faisable !");
     return false;
 }

@@ -21,6 +21,12 @@
 #include "moveit_planning/robot_utils.h"
 #include "moveit_planning/moveTo_utils.h"
 
+
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <ros/ros.h>
+#include <sstream>
+
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "grasp_pose_demo");
     ros::NodeHandle nh;
@@ -30,6 +36,9 @@ int main(int argc, char** argv) {
     moveit::planning_interface::MoveGroupInterface move_group("panda_manipulator");
     moveit::planning_interface::MoveGroupInterface gripper_group("panda_hand");
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+
+    // Ouvrir la pince au max dès le début
+    openGripper(gripper_group);
 
     // Charger objet
     auto objet_size = loadObjectSize("/cube/size");

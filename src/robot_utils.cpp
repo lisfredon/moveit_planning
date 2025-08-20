@@ -18,7 +18,7 @@ bool attachObject(
 }
 
 void openGripper(moveit::planning_interface::MoveGroupInterface& gripper_group) {
-    std::vector<double> open_position = {0.04, 0.04}; 
+    const std::vector<double> open_position{0.04, 0.04}; 
 
     gripper_group.setJointValueTarget(open_position);
     gripper_group.move();
