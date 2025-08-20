@@ -73,4 +73,17 @@ bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
         const tf2::Vector3& in_plane_axis,
         int face_index);
 
+struct GraspChoice {
+    int face_index;
+    std::string side_face;
+    tf2::Vector3 n_local;
+    tf2::Vector3 in_plane_axis;
+};
+
+bool chooseGraspFace(
+    ros::NodeHandle& nh,
+    moveit::planning_interface::MoveGroupInterface& gripper_group,
+    const std::vector<double>&  objet_size,
+    GraspChoice& result);
+
 #endif  // MOVEIT_PLANNING_GRASP_UTILS_H

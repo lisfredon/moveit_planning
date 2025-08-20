@@ -4,9 +4,13 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <shape_msgs/SolidPrimitive.h>
-#include "moveit_planning/grasp_utils.h"
+
 #include <vector>
 #include <cmath>
+#include <random>
+
+#include "moveit_planning/grasp_utils.h"
+#include "moveit_planning/load_add_object.h"
 
 bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const std::string& side_face, double max_finger_opening) {
     double grasp_dim = 0.0;
@@ -159,3 +163,62 @@ bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
     return true;
 }
 
+bool chooseGraspFace(
+    ros::NodeHandle& nh,
+    moveit::planning_interface::MoveGroupInterface& gripper_group,
+    const std::vector<double>& objet_size,
+    GraspChoice& result)
+{
+    // Lire paramètres YAML
+    int face_index_param;
+    std::string side_face_param;
+    bool has_face = nh.getParam("/how_take_cube/choice_face", face_index_param);
+    bool has_side = nh.getParam("/how_take_cube/side_face", side_face_param);
+
+    std::vector<int> faces;
+    std::vector<std::string> sides = {"width", "length"};
+
+    if (has_face) {
+        faces = {face_index_param};
+    } else {
+        faces = {0,1,2,3,4,5};
+        std::shuffle(faces.begin(), faces.end(), std::mt19937(std::random_device{}()));
+        ROS_WARN("Aucune face_index fournie → test aléatoire des faces.");
+    }
+
+    if (has_side) {
+        sides = {side_face_param};
+    } else {
+        std::shuffle(sides.begin(), sides.end(), std::mt19937(std::random_device{}()));
+        ROS_WARN("Aucun side_face fourni → test aléatoire entre width et length.");
+    }
+
+    double max_opening = getMaxFingerOpening(gripper_group);
+
+    // Essayer toutes les combinaisons
+    for (int face_index : faces) {
+        for (const auto& side_face : sides) {
+
+            ROS_INFO_STREAM(">>> Test face " << face_index 
+                            << " avec side=" << side_face);
+
+            if (!isFaceGraspable(objet_size, face_index, side_face, max_opening)) {
+                ROS_WARN("Face non saisissable, on passe à la suivante.");
+                continue;
+            }
+
+            // Succès géométrique
+            result.face_index = face_index;
+            result.side_face = side_face;
+            result.n_local = getNormalObject(face_index);
+            result.in_plane_axis = getObjectAxis(face_index, side_face);
+
+            ROS_INFO_STREAM(">>> Face choisie = " << face_index 
+                            << " avec side=" << side_face);
+            return true;
+        }
+    }
+
+    ROS_ERROR("Aucune face géométriquement saisissable !");
+    return false;
+}

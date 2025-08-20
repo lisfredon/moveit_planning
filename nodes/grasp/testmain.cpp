@@ -39,29 +39,20 @@ int main(int argc, char** argv) {
     // Ajouter objet à MoveIt
     auto objet = addObjectToScene(planning_scene_interface, object_id, objet_pose, objet_size, move_group.getPlanningFrame());
 
-    // Choix de la face et de l'orientation dans le plan
-    auto face_index = loadGoalFace("/how_take_cube/choice_face");
-    tf2::Vector3 n_local = getNormalObject(face_index);
-    auto side_face = loadSideFace("/how_take_cube/side_face");
-    tf2::Vector3 in_plane_axis = getObjectAxis(face_index, side_face);
-    
+    GraspChoice grasp;
+    if (!chooseGraspFace(nh, gripper_group, objet_size, grasp)) {
+        return 1;
+    }
+
     //Visualisation des axes de l'objet pour debug 
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>(object_id, 1, true);
     visualizeCubeFaces(marker_pub, objet_pose);
 
-
-    // Vérifier si la préhension est possible avant de déplacer le robot
-    double max_opening = getMaxFingerOpening(gripper_group);
-    if (!isFaceGraspable(objet_size, face_index, side_face, max_opening)) {
-        ROS_ERROR("Objet trop gros pour la pince du robot !");
-        return 1;
-    }
-
     // Phase d'approche
-    approch(move_group, gripper_group, objet_pose, n_local, in_plane_axis);
+    if (!approch(move_group, gripper_group, objet_pose, grasp.n_local, grasp.in_plane_axis)) return 1;
     
     //phase de grip
-    grip(move_group, gripper_group, objet_pose, objet_size, n_local, in_plane_axis, face_index);
+    if (!grip(move_group, gripper_group, objet_pose, objet_size, grasp.n_local, grasp.in_plane_axis, grasp.face_index)) return 1;
 
     // Attacher l’objet
     std::string hand_link = "panda_hand";
