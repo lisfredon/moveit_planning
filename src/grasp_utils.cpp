@@ -11,6 +11,7 @@
 
 #include "moveit_planning/grasp_utils.h"
 #include "moveit_planning/load_add_object.h"
+#include "moveit_planning/robot_utils.h"
 
 bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const std::string& side_face, double max_finger_opening) {
     double grasp_dim = 0.0;
@@ -47,23 +48,6 @@ bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const 
                     << ", ouverture max pince=" << max_finger_opening);
 
     return grasp_dim <= max_finger_opening;
-}
-
-
-
-double getMaxFingerOpening(moveit::planning_interface::MoveGroupInterface& gripper_group) {
-    auto joint_model_group = gripper_group.getRobotModel()->getJointModelGroup(gripper_group.getName());
-    const std::vector<const moveit::core::JointModel*>& joints = joint_model_group->getActiveJointModels();
-
-    double max_opening = 0.0;
-    for (const auto& joint : joints) {
-        const auto& bounds = joint->getVariableBounds(joint->getName());
-        if (bounds.position_bounded_) {
-            double joint_max = bounds.max_position_;
-            if (joint_max > max_opening) max_opening = joint_max;
-        }
-    }
-    return max_opening*2;
 }
 
 
@@ -126,12 +110,6 @@ double getFingerTarget(const std::vector<double>& cube_size, int face_index) {
         case 4: case 5: return cube_size[2] / 2.0;
     }
     return 0.0;
-}
-
-void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group, double target) {
-    std::vector<double> gripper_targets = {target, target};
-    gripper_group.setJointValueTarget(gripper_targets);
-    gripper_group.move();
 }
 
 bool approch(moveit::planning_interface::MoveGroupInterface& move_group,

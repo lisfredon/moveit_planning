@@ -17,6 +17,9 @@ bool attachObject(
 
 void openGripper(moveit::planning_interface::MoveGroupInterface& gripper_group);
 
+void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group, double target);
+
+double getMaxFingerOpening(moveit::planning_interface::MoveGroupInterface& gripper_group);
 
 void detachObject(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
                   moveit::planning_interface::MoveGroupInterface& move_group,

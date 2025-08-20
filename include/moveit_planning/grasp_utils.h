@@ -48,7 +48,6 @@ std::vector<geometry_msgs::Pose> generateGraspPoses(
 
 bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const std::string& side_face, double max_finger_opening);
 
-double getMaxFingerOpening(moveit::planning_interface::MoveGroupInterface& gripper_group);
 //geometry_msgs::Pose generateAlignedGraspPose(const geometry_msgs::Pose& cube_pose);
 geometry_msgs::Pose generateGraspPose(
     const geometry_msgs::Pose& cube_pose,
@@ -57,7 +56,6 @@ geometry_msgs::Pose generateGraspPose(
     double offset = 0.0);
 
 double getFingerTarget(const std::vector<double>& cube_size, int face_index);
-void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group, double target);
 
 bool approch(moveit::planning_interface::MoveGroupInterface& move_group,
         moveit::planning_interface::MoveGroupInterface& gripper_group,

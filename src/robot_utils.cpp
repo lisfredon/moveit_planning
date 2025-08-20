@@ -24,6 +24,26 @@ void openGripper(moveit::planning_interface::MoveGroupInterface& gripper_group) 
     gripper_group.move();
 }
 
+void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group, double target) {
+    std::vector<double> gripper_targets = {target, target};
+    gripper_group.setJointValueTarget(gripper_targets);
+    gripper_group.move();
+}
+
+double getMaxFingerOpening(moveit::planning_interface::MoveGroupInterface& gripper_group) {
+    auto joint_model_group = gripper_group.getRobotModel()->getJointModelGroup(gripper_group.getName());
+    const std::vector<const moveit::core::JointModel*>& joints = joint_model_group->getActiveJointModels();
+
+    double max_opening = 0.0;
+    for (const auto& joint : joints) {
+        const auto& bounds = joint->getVariableBounds(joint->getName());
+        if (bounds.position_bounded_) {
+            double joint_max = bounds.max_position_;
+            if (joint_max > max_opening) max_opening = joint_max;
+        }
+    }
+    return max_opening*2;
+}
 
 void detachObject(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
                   moveit::planning_interface::MoveGroupInterface& move_group,
