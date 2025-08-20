@@ -1,6 +1,5 @@
 #include "moveit_planning/approch_utils.h"
 #include "moveit_planning/grasp_utils.h"
-#include "moveit_planning/retreat_utils.h"
 #include "moveit_planning/solvers_utils.h"
 
 #include <ros/ros.h>
