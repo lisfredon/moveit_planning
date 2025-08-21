@@ -12,6 +12,7 @@
 #include "moveit_planning/grasp_utils.h"
 #include "moveit_planning/load_add_object.h"
 #include "moveit_planning/robot_utils.h"
+#include "moveit_planning/solvers_utils.h"
 
 bool isFaceGraspable(const std::vector<double>& obj_size, int face_index, const std::string& side_face, double max_finger_opening) {
     double grasp_dim = 0.0;
@@ -119,7 +120,9 @@ bool approch(moveit::planning_interface::MoveGroupInterface& move_group,
         const tf2::Vector3& in_plane_axis)
 {
     geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, n_local, in_plane_axis, 0.05);
-    if (!moveTo(move_group, target_pose, SolverType::OMPL, "approche")) return 1;
+    auto solver_goal = loadSolver("/approch_solver"); 
+    SolverType solver = solverFromString(solver_goal);
+    if (!moveTo(move_group, target_pose, solver, "approche")) return false;
     return true;
 }
 
@@ -132,7 +135,9 @@ bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
         int face_index)
 {
     geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, n_local, in_plane_axis, 0.0);
-    if (!moveTo(move_group, target_pose, SolverType::OMPL, "préhension")) return false;
+    auto solver_goal = loadSolver("/grip_solver"); 
+    SolverType solver = solverFromString(solver_goal);
+    if (!moveTo(move_group, target_pose, solver, "préhension")) return false;
     
     //Fermer la pince
     double finger_target = getFingerTarget(obj_size, face_index);
