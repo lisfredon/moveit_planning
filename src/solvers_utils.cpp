@@ -2,6 +2,16 @@
 #include <moveit_msgs/RobotTrajectory.h>
 #include <moveit/robot_state/robot_state.h>
 
+
+SolverType solverFromString(const std::string& solver_name) {
+    if (solver_name == "OMPL")  return SolverType::OMPL;
+    if (solver_name == "CARTESIAN") return SolverType::CARTESIAN;
+    if (solver_name == "JOINT_INTERPOLATION") return SolverType::JOINT_INTERPOLATION;
+    ROS_WARN_STREAM("Solver inconnu : " << solver_name << ", utilisation de OMPL par défaut.");
+    return SolverType::OMPL;  // valeur par défaut
+}
+
+
 bool planAndExecute(moveit::planning_interface::MoveGroupInterface& move_group,
                     const geometry_msgs::Pose& target_pose,
                     SolverType solver) {

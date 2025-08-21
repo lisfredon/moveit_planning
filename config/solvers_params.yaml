@@ -1,0 +1,5 @@
+approch_solver : OMPL
+
+grip_solver : OMPL
+
+goal_solver : OMPL

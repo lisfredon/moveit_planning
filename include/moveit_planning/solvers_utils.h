@@ -11,6 +11,8 @@ enum class SolverType {
     JOINT_INTERPOLATION
 };
 
+SolverType solverFromString(const std::string& solver_name);
+
 // Exécute un plan vers une pose avec le solveur choisi
 bool planAndExecute(moveit::planning_interface::MoveGroupInterface& move_group,
                     const geometry_msgs::Pose& target_pose,

@@ -49,9 +49,7 @@ int main(int argc, char** argv) {
     auto objet = addObjectToScene(planning_scene_interface, object_id, objet_pose, objet_size, move_group.getPlanningFrame());
 
     GraspChoice grasp;
-    if (!chooseGraspFace(nh, gripper_group, objet_size, grasp)) {
-        return 1;
-    }
+    if (!chooseGraspFace(nh, gripper_group, objet_size, grasp)) return 1;
 
     //Visualisation des axes de l'objet pour debug 
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>(object_id, 1, true);
@@ -70,8 +68,10 @@ int main(int argc, char** argv) {
 
 
     // Déplacement vers le goal
+    auto solver_goal = loadSolver("/goal_solver"); 
+    SolverType solver = solverFromString(solver_goal);
     auto goal_pose = loadObjectPose("/goal");
-    if (!moveTo(move_group, goal_pose, SolverType::OMPL, "déplacement vers la target")) return 1;
+    if (!moveTo(move_group, goal_pose, solver, "déplacement vers la target")) return 1;
 
     // Ouvrir la pince pour déposer l'objet
     openGripper(gripper_group);

@@ -20,6 +20,8 @@ std::string loadSideFace(const std::string& param_name);
 
 int loadGoalFace(const std::string& param_name);
 
+std::string loadSolver(const std::string& param_namespace);
+
 moveit_msgs::CollisionObject addObjectToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
                                               const std::string& object_id,
                                               const geometry_msgs::Pose& object_pose,
