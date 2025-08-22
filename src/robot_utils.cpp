@@ -1,4 +1,5 @@
 #include "moveit_planning/robot_utils.h"
+#include <moveit/robot_model_loader/robot_model_loader.h>
 
 bool attachObject(
     moveit::planning_interface::MoveGroupInterface& move_group,
@@ -16,6 +17,24 @@ bool attachObject(
         return false;
     }
 }
+
+std::vector<std::string> getGroupLinks(const std::string& group_name) {
+    robot_model_loader::RobotModelLoader loader("robot_description");
+    moveit::core::RobotModelPtr kinematic_model = loader.getModel();
+    if (!kinematic_model) {
+        ROS_ERROR("Impossible de charger le modèle du robot");
+        return {};
+    }
+
+    const moveit::core::JointModelGroup* jmg = kinematic_model->getJointModelGroup(group_name);
+    if (!jmg) {
+        ROS_ERROR("Groupe %s introuvable", group_name.c_str());
+        return {};
+    }
+
+    return jmg->getLinkModelNames();
+}
+
 
 void openGripper(moveit::planning_interface::MoveGroupInterface& gripper_group) {
     const std::vector<double> open_position{0.04, 0.04}; 

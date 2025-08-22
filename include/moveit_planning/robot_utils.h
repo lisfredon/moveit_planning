@@ -15,6 +15,8 @@ bool attachObject(
     const std::string& hand_link,
     const std::vector<std::string>& touch_links);
 
+std::vector<std::string> getGroupLinks(const std::string& group_name);
+
 void openGripper(moveit::planning_interface::MoveGroupInterface& gripper_group);
 
 void closeGripper(moveit::planning_interface::MoveGroupInterface& gripper_group, double target);

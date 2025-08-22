@@ -38,7 +38,7 @@ catkin_package(
 add_library(moveit_utils src/utils.cpp)
 target_link_libraries(moveit_utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(approch_utils src/approch_utils.cpp src/moveTo_utils.cpp src/robot_utils.cpp src/grasp_utils.cpp src/load_add_object.cpp src/solvers_utils.cpp src/visualization_utils.cpp src/pipeline.cpp) 
+add_library(approch_utils src/approch_utils.cpp src/moveTo_utils.cpp src/robot_utils.cpp src/grasp_utils.cpp src/load_add_object.cpp nodes/grasp/pick_place_manager.cpp src/solvers_utils.cpp src/visualization_utils.cpp src/pipeline.cpp) 
 target_link_libraries(approch_utils PUBLIC ${catkin_LIBRARIES})
 
 ###############
@@ -74,6 +74,7 @@ add_dependencies(testmain ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_
 
 add_executable(face_colors nodes/grasp/face_colors.cpp)
 target_link_libraries(face_colors ${catkin_LIBRARIES})
+
 
 add_executable(orient_and_place_cube nodes/grasp/orient_and_place_cube.cpp)
 target_link_libraries(orient_and_place_cube ${catkin_LIBRARIES} moveit_utils)
