@@ -1,32 +1,26 @@
 #include "moveit_planning/robot_utils.h"
 #include <moveit/robot_model_loader/robot_model_loader.h>
 
-bool attachObject(
-    moveit::planning_interface::MoveGroupInterface& move_group,
-    const std::string& object_id,
-    const std::string& hand_link,
-    const std::vector<std::string>& touch_links)
+bool attachObject(moveit::planning_interface::MoveGroupInterface& move_group,
+                  const std::string& object_id,
+                  const std::string& hand_link,
+                  const std::vector<std::string>& touch_links) 
 {
-    try {
-        move_group.attachObject(object_id, hand_link, touch_links);
-        ros::Duration(0.5).sleep(); // attendre que le PlanningScene soit à jour
-        ROS_INFO("Objet %s attaché à %s", object_id.c_str(), hand_link.c_str());
-        return true;
-    } catch (const std::exception& e) {
-        ROS_ERROR("Erreur lors de l'attachement de l'objet %s : %s", object_id.c_str(), e.what());
-        return false;
-    }
+    move_group.attachObject(object_id, hand_link, touch_links);
+    ros::Duration(0.5).sleep(); // laisser la scene se mettre à jour
+    ROS_INFO("Objet %s attaché à %s", object_id.c_str(), hand_link.c_str());
+    return true;
 }
 
 std::vector<std::string> getGroupLinks(const std::string& group_name) {
-    robot_model_loader::RobotModelLoader loader("robot_description");
-    moveit::core::RobotModelPtr kinematic_model = loader.getModel();
+    static robot_model_loader::RobotModelLoader loader("robot_description");
+    static moveit::core::RobotModelPtr kinematic_model = loader.getModel();
     if (!kinematic_model) {
         ROS_ERROR("Impossible de charger le modèle du robot");
         return {};
     }
 
-    const moveit::core::JointModelGroup* jmg = kinematic_model->getJointModelGroup(group_name);
+    const auto* jmg = kinematic_model->getJointModelGroup(group_name);
     if (!jmg) {
         ROS_ERROR("Groupe %s introuvable", group_name.c_str());
         return {};
@@ -68,5 +62,5 @@ void detachObject(moveit::planning_interface::PlanningSceneInterface& planning_s
                   moveit::planning_interface::MoveGroupInterface& move_group,
                   const std::string& object_id) {
     move_group.detachObject(object_id);
-
+    ROS_INFO("Objet %s détaché", object_id.c_str());
 }

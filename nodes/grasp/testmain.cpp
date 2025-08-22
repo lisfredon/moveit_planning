@@ -37,13 +37,28 @@ int main(int argc, char** argv) {
     // Ouvrir la pince au max dès le début
     manager.openGripper();
 
-    // Charger objet
-    auto objet_size = loadObjectSize("/cube/size");
-    auto objet_pose = loadObjectPose("/cube");
-    auto object_id = loadObjectID("/cube/id");
+    // Charger la liste des cubes depuis YAML
+    std::vector<std::string> cube_names;
+    if (!nh.getParam("/cubes", cube_names)) {
+        ROS_ERROR("Impossible de charger la liste des cubes (/cubes)");
+        return 1;
+    }
+    // Ajouter tous les cubes dans la scène
+    for (const auto& cube_ns : cube_names) {
+        auto size = loadObjectSize("/" + cube_ns + "/size");
+        auto pose = loadObjectPose("/" + cube_ns);
+        auto id   = loadObjectID("/" + cube_ns + "/id");
+        manager.addObject(id, pose, size);
+    }
 
-    // Ajouter objet à MoveIt
-    auto object = manager.addObject(object_id, objet_pose, objet_size);
+    // Cube cible à manipuler (param configurable)
+    std::string object_id;
+    nh.param<std::string>("/target_cube", object_id, "cube1");
+
+    // Charger infos du cube cible
+    auto objet_size = loadObjectSize("/" + object_id + "/size");
+    auto objet_pose = loadObjectPose("/" + object_id);
+
 
     GraspChoice grasp;
     if (!check(chooseGraspFace(nh, manager.getGripperGroup(), objet_size, grasp), "choix de la face de grasp")) return 1;

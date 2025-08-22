@@ -159,8 +159,6 @@ bool chooseGraspFace(
     bool has_side = nh.getParam("/how_take_cube/side_face", side_face_param);
 
     std::vector<int> faces;
-    std::vector<std::string> all_sides = {"width_high", "width_down", "length_high", "length_down"}
-;
 
     if (has_face) {
         faces = {face_index_param};
@@ -174,7 +172,7 @@ bool chooseGraspFace(
     if (has_side) {
         sides = {side_face_param};
     } else {
-        sides = all_sides;
+        sides = {"width_high", "width_down", "length_high", "length_down"};
         std::shuffle(sides.begin(), sides.end(), std::mt19937(std::random_device{}()));
         ROS_WARN("Aucun side_face fourni → test aléatoire entre width_high', 'width_down', 'length_high' et'length_down'.");
     }
