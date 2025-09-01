@@ -1,6 +1,6 @@
 # Goal
-string object_id
 geometry_msgs/PoseStamped goal_pose
+string object_id
 string solver_name
 
 ---
@@ -10,4 +10,4 @@ string message
 
 ---
 # Feedback
-string current_step
+string current_phase

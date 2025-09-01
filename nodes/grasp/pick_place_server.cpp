@@ -1,4 +1,4 @@
-/*
+
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <moveit_planning/PickPlaceAction.h>
@@ -25,70 +25,56 @@ public:
         action_name_(name),
         manager_("panda_manipulator", "panda_hand")
     {
+        // --- AJOUTER LES CUBES DANS LA SCÈNE ---
+        std::vector<std::string> cube_names;
+        if (!nh_.getParam("/cubes", cube_names)) {
+            ROS_WARN("Aucun cube trouvé dans le param server (/cubes)");
+        } else {
+            for (const auto& cube_ns : cube_names) {
+                std::string cube_id = loadObjectID("/" + cube_ns + "/id");
+                geometry_msgs::Pose cube_pose = loadObjectPose("/" + cube_ns);
+                std::vector<double> cube_size = loadObjectSize("/" + cube_ns + "/size");
+                manager_.addObject(cube_id, cube_pose, cube_size);
+                ROS_INFO("Cube '%s' ajouté dans la scène.", cube_id.c_str());
+            }
+        }
+
+        // Démarrage de l'action server
         as_.start();
         ROS_INFO("PickPlace Action Server démarré.");
     }
 
     void executeCB(const moveit_planning::PickPlaceGoalConstPtr &goal) {
         // Ouverture pince
-        feedback_.current_step = "Ouverture pince";
+        feedback_.current_phase = "Ouverture pince";
         as_.publishFeedback(feedback_);
         manager_.openGripper();
 
-        // Charger infos de l’objet
-        auto obj_size = loadObjectSize("/" + goal->object_id + "/size");
-        auto obj_pose = loadObjectPose("/" + goal->object_id);
-
-        // Choix face de grasp
-        feedback_.current_step = "Choix face grasp";
+        feedback_.current_phase = "Pick";
         as_.publishFeedback(feedback_);
-        GraspChoice grasp;
-        if (!check(chooseGraspFace(nh_, manager_.getGripperGroup(), obj_size, grasp), "choix face")) {
+        tf2::Vector3 n_local(1, 0, 0);  // axe X
+        tf2::Vector3 o_local(0, 1, 0);  // axe Y
+        if (!manager_.pick(goal->object_id,
+                            loadObjectPose("/" + goal->object_id),
+                            loadObjectSize("/" + goal->object_id + "/size"),
+                             n_local, o_local, 0)) {
             result_.success = false;
-            result_.message = "Echec choix grasp";
+            result_.message = "Échec du pick";
             as_.setAborted(result_);
             return;
         }
 
-        // Approche
-        feedback_.current_step = "Approche";
+        feedback_.current_phase = "Place";
         as_.publishFeedback(feedback_);
-        if (!check(manager_.approach(obj_pose, grasp.n_local, grasp.in_plane_axis), "approche")) {
+
+        SolverType solver = loadSolver(goal->solver_name);
+
+        if (!manager_.place(goal->object_id, goal->goal_pose.pose, goal->goal_pose.pose, solver)) {
             result_.success = false;
-            result_.message = "Echec approche";
+            result_.message = "Échec du place";
             as_.setAborted(result_);
             return;
         }
-
-        // Grip
-        feedback_.current_step = "Grip";
-        as_.publishFeedback(feedback_);
-        if (!check(manager_.grip(obj_pose, obj_size, grasp.n_local, grasp.in_plane_axis, grasp.face_index), "grip")) {
-            result_.success = false;
-            result_.message = "Echec grip";
-            as_.setAborted(result_);
-            return;
-        }
-
-        manager_.attachObject(goal->object_id);
-
-        // Déplacement vers goal
-        feedback_.current_step = "Déplacement";
-        as_.publishFeedback(feedback_);
-        SolverType solver = loadSolver(goal->solver_name.empty() ? "/goal_solver" : goal->solver_name);
-
-        if (!check(manager_.moveToGoal(goal->goal_pose.pose, solver), "moveToGoal")) {
-            result_.success = false;
-            result_.message = "Echec déplacement";
-            as_.setAborted(result_);
-            return;
-        }
-
-        // Release
-        feedback_.current_step = "Release";
-        as_.publishFeedback(feedback_);
-        manager_.openGripper();
-        manager_.detachObject(goal->object_id);
 
         result_.success = true;
         result_.message = "Pick & Place terminé avec succès";
@@ -103,4 +89,3 @@ int main(int argc, char** argv) {
     PickPlaceActionServer server("pick_place");
     ros::waitForShutdown();
 }
-*/

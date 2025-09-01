@@ -19,6 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   std_msgs
   message_generation
+  actionlib 
+  actionlib_msgs
 )
 
 include_directories(
@@ -113,6 +115,13 @@ target_link_libraries(orient_and_place_cube ${catkin_LIBRARIES} moveit_utils)
 add_executable(spawn_scene nodes/spawn/spawn_scene.cpp)
 target_link_libraries(spawn_scene ${catkin_LIBRARIES})
 
+add_executable(pick_place_client nodes/grasp/pick_place_client.cpp)
+target_link_libraries(pick_place_client ${catkin_LIBRARIES} moveit_planning_lib)
+add_dependencies(pick_place_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(pick_place_server nodes/grasp/pick_place_server.cpp)
+target_link_libraries(pick_place_server ${catkin_LIBRARIES} moveit_planning_lib)
+add_dependencies(pick_place_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 ###############
