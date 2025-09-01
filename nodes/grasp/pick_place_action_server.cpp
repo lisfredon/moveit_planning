@@ -1,3 +1,4 @@
+/*
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <moveit_planning/PickPlaceAction.h>
@@ -102,3 +103,4 @@ int main(int argc, char** argv) {
     PickPlaceActionServer server("pick_place");
     ros::waitForShutdown();
 }
+*/

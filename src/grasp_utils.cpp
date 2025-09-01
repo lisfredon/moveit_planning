@@ -184,7 +184,9 @@ bool chooseGraspFace(
 
     // Tant qu’il reste des candidats
     while (!candidates.empty()) {
-        auto [face_index, side_face] = candidates.back();
+        auto candidate = candidates.back();
+        int face_index = candidate.first;
+        std::string side_face  = candidate.second;
         candidates.pop_back();
 
         ROS_INFO_STREAM(">>> Test face " << face_index 

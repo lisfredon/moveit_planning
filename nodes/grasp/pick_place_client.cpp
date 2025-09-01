@@ -1,6 +1,6 @@
-#include <ros/ros.h>
+/*#include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
-#include <moveit_planning/PickPlaceAction.h>
+#include <moveit_planning/pick_place_action_server.h>
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "pick_place_client");
@@ -22,3 +22,4 @@ int main(int argc, char** argv) {
     ac.waitForResult();
     ROS_INFO("Result: %s", ac.getResult()->message.c_str());
 }
+*/
