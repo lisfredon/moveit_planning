@@ -7,6 +7,7 @@
 #include "moveit_planning/moveTo_utils.h"
 #include "moveit_planning/error_handling.h"
 #include "moveit_planning/pick_place_manager.h"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 PickPlaceManager::PickPlaceManager(const std::string& arm_group_name,
                                    const std::string& gripper_group_name)
@@ -31,6 +32,7 @@ moveit_msgs::CollisionObject PickPlaceManager::addObject(
 {
     return addObjectToScene(scene_, object_id, pose, size, arm_group_.getPlanningFrame());
 }
+
 
 bool PickPlaceManager::approach(const geometry_msgs::Pose& obj_pose,
                                 const tf2::Vector3& n_local,
@@ -66,8 +68,44 @@ void PickPlaceManager::detachObject(const std::string& object_id) {
 }
 
 bool PickPlaceManager::moveToGoal(const geometry_msgs::Pose& goal_pose,
-                                  const std::string& solver_name) 
+                                  SolverType solver_name) 
+{
+    return ::moveTo(arm_group_, goal_pose, solver_name, "déplacement vers l'objectif");
+}
+
+
+
+bool PickPlaceManager::placeObjectWithMultipleOrientations(
+    const geometry_msgs::Pose& goal_pose,
+    const std::string& solver_name)
 {
     SolverType solver = solverFromString(solver_name);
-    return ::moveTo(arm_group_, goal_pose, solver, "déplacement vers l'objectif");
+
+    // Orientation de base donnée dans le YAML
+    tf2::Quaternion q_base;
+    tf2::fromMsg(goal_pose.orientation, q_base);
+
+    // On va essayer plusieurs rotations autour de Z
+    for (double angle : {0.0, M_PI/2, M_PI, 3*M_PI/2}) {
+        tf2::Quaternion q_rot;
+        q_rot.setRPY(0, 0, angle);  // rotation autour de Z
+        tf2::Quaternion q_candidate = q_rot * q_base;
+        q_candidate.normalize();
+
+        geometry_msgs::Pose target_pose = goal_pose;
+        target_pose.orientation = tf2::toMsg(q_candidate);
+
+        ROS_INFO_STREAM("Essai orientation avec rotation Z=" << angle << " rad");
+
+        if (::moveTo(arm_group_, target_pose, solver, "dépose orientation candidate")) {
+            ROS_INFO("Succès avec cette orientation !");
+            return true;
+        } else {
+            ROS_WARN("Échec pour cette orientation, essai de la suivante...");
+        }
+    }
+
+    ROS_ERROR("Aucune orientation candidate n'a fonctionné !");
+    return false;
 }
+

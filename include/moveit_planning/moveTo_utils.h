@@ -11,4 +11,8 @@ bool moveTo(
     SolverType solver,
     const std::string& phase_name);
 
+tf2::Quaternion computePlaceOrientation(
+    int choice_face,                 // face du cube à mettre "en haut"
+    const geometry_msgs::Pose& cube_pose_at_grasp // orientation initiale de l’objet
+);
 #endif

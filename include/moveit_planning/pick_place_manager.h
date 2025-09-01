@@ -36,12 +36,19 @@ public:
     void detachObject(const std::string& object_id);
 
     bool moveToGoal(const geometry_msgs::Pose& goal_pose,
-                    const std::string& solver_name);
+                    SolverType solver_name);
+    
+    bool placeObjectWithMultipleOrientations(
+        const geometry_msgs::Pose& goal_pose,
+        const std::string& solver_name);
+
 
     moveit::planning_interface::MoveGroupInterface& getGripperGroup() { return gripper_group_; }
+    moveit::planning_interface::MoveGroupInterface& getArmGroup() { return arm_group_; } 
 
 private:
     moveit::planning_interface::MoveGroupInterface arm_group_;
     moveit::planning_interface::MoveGroupInterface gripper_group_;
     moveit::planning_interface::PlanningSceneInterface scene_;
+    geometry_msgs::Pose last_gripped_pose_;
 };

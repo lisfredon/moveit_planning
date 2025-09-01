@@ -121,8 +121,7 @@ bool approch(moveit::planning_interface::MoveGroupInterface& move_group,
 {
     geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, n_local, in_plane_axis, 0.05);
     auto solver_goal = loadSolver("/approch_solver"); 
-    SolverType solver = solverFromString(solver_goal);
-    if (!moveTo(move_group, target_pose, solver, "approche")) return false;
+    if (!moveTo(move_group, target_pose, solver_goal, "approche")) return false;
     return true;
 }
 
@@ -136,8 +135,7 @@ bool grip(moveit::planning_interface::MoveGroupInterface& move_group,
 {
     geometry_msgs::Pose target_pose = generateGraspPose(obj_pose, n_local, in_plane_axis, 0.0);
     auto solver_goal = loadSolver("/grip_solver"); 
-    SolverType solver = solverFromString(solver_goal);
-    if (!moveTo(move_group, target_pose, solver, "préhension")) return false;
+    if (!moveTo(move_group, target_pose, solver_goal, "préhension")) return false;
     
     //Fermer la pince
     double finger_target = getFingerTarget(obj_size, face_index);

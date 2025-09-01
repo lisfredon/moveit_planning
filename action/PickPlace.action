@@ -1,0 +1,13 @@
+# Goal
+string object_id
+geometry_msgs/PoseStamped goal_pose
+string solver_name
+
+---
+# Result
+bool success
+string message
+
+---
+# Feedback
+string current_step

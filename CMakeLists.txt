@@ -15,20 +15,15 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   moveit_ros_planning
   moveit_ros_planning_interface
+  actionlib_msgs
+  actionlib
+  std_msgs
+  message_generation
 )
-
-catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include
-)
-
-catkin_package(
-  CATKIN_DEPENDS
-    tf2
-    tf2_geometry_msgs
-    tf2_eigen
 )
 
 ###############
@@ -38,12 +33,42 @@ catkin_package(
 add_library(moveit_utils src/utils.cpp)
 target_link_libraries(moveit_utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(approch_utils src/approch_utils.cpp src/moveTo_utils.cpp src/robot_utils.cpp src/grasp_utils.cpp src/load_add_object.cpp nodes/grasp/pick_place_manager.cpp src/solvers_utils.cpp src/visualization_utils.cpp src/pipeline.cpp) 
+add_library(approch_utils src/approch_utils.cpp nodes/grasp/pick_place_manager.cpp nodes/grasp/pick_place_client.cpp src/moveTo_utils.cpp src/robot_utils.cpp src/grasp_utils.cpp src/load_add_object.cpp nodes/grasp/pick_place_manager.cpp src/solvers_utils.cpp src/visualization_utils.cpp src/pipeline.cpp) 
 target_link_libraries(approch_utils PUBLIC ${catkin_LIBRARIES})
+
+
+##############
+#   Action   #
+##############
+
+add_action_files(
+  FILES
+  PickPlace.action
+)
+
+generate_messages(
+  DEPENDENCIES
+  actionlib_msgs
+  std_msgs
+  geometry_msgs
+)
+
+catkin_package(
+  CATKIN_DEPENDS roscpp geometry_msgs moveit_ros_planning_interface
+                 actionlib actionlib_msgs message_runtime
+)
 
 ###############
 # Executables #
 ###############
+
+add_executable(pick_place_action_server nodes/grasp/pick_place_action_server.cpp)
+target_link_libraries(pick_place_action_server ${catkin_LIBRARIES} approch_utils)
+add_dependencies(pick_place_action_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(pick_place_client nodes/grasp/pick_place_client.cpp)
+target_link_libraries(pick_place_client ${catkin_LIBRARIES})
+add_dependencies(pick_place_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(moncube nodes/grasp/moncube.cpp)
 target_link_libraries(moncube ${catkin_LIBRARIES})

@@ -1,0 +1,18 @@
+<launch>
+  <!-- URDF -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro '$(find franka_description)/robots/panda/panda.urdf.xacro' hand:=true" />
+
+  <!-- SRDF -->
+  <param name="robot_description_semantic"
+         command="$(find xacro)/xacro '$(find panda_moveit_config)/config/panda.srdf.xacro' hand:=true" />
+
+  <!--param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda/panda.urdf.xacro'" />
+  <param name="robot_description_semantic" command="$(find panda_moveit_config)/config/panda.srdf.xacro" /-->
+  <!--param name="robot_description" command="$(find xacro)/xacro '$(find moveit_planning)/models/panda.urdf.xacro'" />
+  <param name="robot_description_semantic" command="$(find xacro)/xacro '$(find moveit_planning)/models/panda.srdf.xacro'" /-->
+
+  <rosparam file="$(find moveit_planning)/config/object_params.yaml" command="load"/>
+  <rosparam file="$(find panda_moveit_config)/config/kinematics.yaml" command="load"/>
+  <node name="server_main" pkg="moveit_planning" type="server_main" output="screen"/>
+</launch>

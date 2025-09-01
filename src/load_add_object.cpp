@@ -83,14 +83,14 @@ int loadGoalFace(const std::string& param_name) {
     return choice_face;
 }
 
-std::string loadSolver(const std::string& param_namespace) {
+SolverType loadSolver(const std::string& param_namespace) {
     std::string solver;
     if (!ros::param::get(param_namespace, solver)) {
         ROS_ERROR_STREAM("Impossible de charger le solver souhaité : " << param_namespace);
-        return ""; 
+        return SolverType::OMPL; 
     }
     ROS_INFO_STREAM("Solver chargé depuis " << param_namespace << " : " << solver);
-    return solver;
+    return solverFromString(solver);
 }
 
 moveit_msgs::CollisionObject addObjectToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,

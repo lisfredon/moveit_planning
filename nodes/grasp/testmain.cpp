@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     auto objet_size = loadObjectSize("/" + object_id + "/size");
     auto objet_pose = loadObjectPose("/" + object_id);
 
-
+    // Choisir la face pour le grasp
     GraspChoice grasp;
     if (!check(chooseGraspFace(nh, manager.getGripperGroup(), objet_size, grasp), "choix de la face de grasp")) return 1;
 
@@ -72,16 +72,34 @@ int main(int argc, char** argv) {
     
     //phase de grip
     if (!check(manager.grip(objet_pose, objet_size, grasp.n_local, grasp.in_plane_axis, grasp.face_index), "phase de grip")) return 1;
+    
+    geometry_msgs::PoseStamped eef_pose = manager.getArmGroup().getCurrentPose();
+
+    tf2::Quaternion q_eef, q_obj;
+    tf2::fromMsg(eef_pose.pose.orientation, q_eef);
+    tf2::fromMsg(objet_pose.orientation, q_obj);
+
+    // Orientation relative entre l’EEF et l’objet au moment du grasp
+    tf2::Quaternion q_rel = q_eef.inverse() * q_obj;
 
     // Attacher l’objet
-    //std::string hand_link = "panda_hand";
-    //std::vector<std::string> touch_links = {"panda_hand", "panda_leftfinger", "panda_rightfinger"};
     manager.attachObject(object_id);
 
     // Déplacement vers le goal
     auto solver_goal = loadSolver("/goal_solver"); 
-    SolverType solver = solverFromString(solver_goal);
     auto goal_pose = loadObjectPose("/goal");
+
+    // Normaliser orientation du YAML
+    tf2::Quaternion q_obj_goal;
+    tf2::fromMsg(goal_pose.orientation, q_obj_goal);
+    q_obj_goal.normalize();
+
+    // Recomposer orientation finale de l’EEF
+    tf2::Quaternion q_eef_goal = q_obj_goal * q_rel.inverse();
+    q_eef_goal.normalize();
+
+    goal_pose.orientation = tf2::toMsg(q_eef_goal);
+
     if (!check(manager.moveToGoal(goal_pose, solver_goal), "phase déplacement vers l'objectif")) return 1;
 
     // Ouvrir la pince pour déposer l'objet

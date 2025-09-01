@@ -11,6 +11,8 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <ros/ros.h>
 
+#include "moveit_planning/solvers_utils.h"
+
 geometry_msgs::Pose loadObjectPose(const std::string& param_namespace);
 
 std::vector<double> loadObjectSize(const std::string& param_name);
@@ -20,7 +22,7 @@ std::string loadSideFace(const std::string& param_name);
 
 int loadGoalFace(const std::string& param_name);
 
-std::string loadSolver(const std::string& param_namespace);
+SolverType loadSolver(const std::string& param_namespace);
 
 moveit_msgs::CollisionObject addObjectToScene(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface,
                                               const std::string& object_id,
