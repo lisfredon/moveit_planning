@@ -94,23 +94,11 @@ add_executable(interactive_spawn_cube nodes/spawn/interactive_spawn_cube.cpp)
 target_link_libraries(interactive_spawn_cube ${catkin_LIBRARIES})
 add_dependencies(interactive_spawn_cube ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(pick_place_demo nodes/grasp/pick_place_demo.cpp)
-target_link_libraries(pick_place_demo ${catkin_LIBRARIES})
-add_dependencies(pick_place_demo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 add_executable(interactive_place nodes/grasp/interactive_place.cpp)
 target_link_libraries(interactive_place ${catkin_LIBRARIES})
 
-add_executable(testmain nodes/grasp/testmain.cpp)
-target_link_libraries(testmain ${catkin_LIBRARIES} moveit_planning_lib)
-add_dependencies(testmain ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 add_executable(face_colors nodes/grasp/face_colors.cpp)
 target_link_libraries(face_colors ${catkin_LIBRARIES})
-
-
-add_executable(orient_and_place_cube nodes/grasp/orient_and_place_cube.cpp)
-target_link_libraries(orient_and_place_cube ${catkin_LIBRARIES} moveit_utils)
 
 add_executable(spawn_scene nodes/spawn/spawn_scene.cpp)
 target_link_libraries(spawn_scene ${catkin_LIBRARIES})
@@ -129,7 +117,6 @@ add_dependencies(pick_place_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ###############
 
 install(TARGETS 
-  pick_place_demo
   moncube
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

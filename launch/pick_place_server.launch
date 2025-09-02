@@ -2,6 +2,7 @@
 
   <rosparam file="$(find moveit_planning)/config/object_params.yaml" command="load"/>
   <rosparam file="$(find moveit_planning)/config/solvers_params.yaml" command="load"/>
+  <rosparam file="/home/lfredon/Documents/ws_moveit/src/moveit_planning/config/robot_params.yaml" command="load"/>
   <!-- Action Server -->
   <node name="pick_place_server" pkg="moveit_planning" type="pick_place_server" output="screen" />
 
