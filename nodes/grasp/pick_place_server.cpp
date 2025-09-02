@@ -22,8 +22,8 @@ protected:
 public:
     PickPlaceActionServer(std::string name) :
         as_(nh_, name, boost::bind(&PickPlaceActionServer::executeCB, this, _1), false),
-        action_name_(name),
-        manager_("panda_manipulator", "panda_hand")
+        action_name_(name), 
+        manager_(loadManipulatorGroup(), loadGripperGroup())
     {
         // --- AJOUTER LES CUBES DANS LA SCÈNE ---
         std::vector<std::string> cube_names;
@@ -42,6 +42,24 @@ public:
         // Démarrage de l'action server
         as_.start();
         ROS_INFO("PickPlace Action Server démarré.");
+    }
+
+    std::string loadManipulatorGroup() {
+        std::string robot_name;
+        nh_.param<std::string>("/robot", robot_name, "");
+
+        std::string manipulator_group;
+        nh_.param<std::string>("/robots/" + robot_name + "/manipulator_group", manipulator_group, "");
+        return manipulator_group;
+    }
+
+    std::string loadGripperGroup() {
+        std::string robot_name;
+        nh_.param<std::string>("/robot", robot_name, "");
+
+        std::string gripper_group;
+        nh_.param<std::string>("/robots/" + robot_name + "/gripper_group", gripper_group, "");
+        return gripper_group;
     }
 
     void executeCB(const moveit_planning::PickPlaceGoalConstPtr &goal) {
