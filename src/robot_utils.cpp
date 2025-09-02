@@ -1,6 +1,30 @@
 #include "moveit_planning/robot_utils.h"
 #include <moveit/robot_model_loader/robot_model_loader.h>
 
+PickPlaceManager initRobot(const ros::NodeHandle& nh)
+{
+    std::string robot_name;
+    nh.param<std::string>("/robot", robot_name, "");
+
+    std::string manipulator_group, gripper_group;
+    nh.param<std::string>("/robots/" + robot_name + "/manipulator_group", manipulator_group, "");
+    nh.param<std::string>("/robots/" + robot_name + "/gripper_group", gripper_group, "");
+
+    if (manipulator_group.empty() || gripper_group.empty()) {
+        ROS_FATAL("Impossible de charger les groupes MoveIt pour le robot '%s'. Vérifie robots.yaml !", robot_name.c_str());
+        throw std::runtime_error("Groupes MoveIt non définis");
+    }
+
+    PickPlaceManager manager(manipulator_group, gripper_group);
+    manager.openGripper();
+
+    ROS_INFO_STREAM("[InitRobot] Robot '" << robot_name << "' initialisé avec : "
+                    << "manipulator='" << manipulator_group
+                    << "', gripper='" << gripper_group << "'");
+
+    return manager;
+}
+
 bool attachObject(moveit::planning_interface::MoveGroupInterface& move_group,
                   const std::string& object_id,
                   const std::string& hand_link,

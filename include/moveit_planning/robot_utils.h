@@ -9,6 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "moveit_planning/pick_place_manager.h"
+
+PickPlaceManager initRobot(const ros::NodeHandle& nh);
+
 bool attachObject(
     moveit::planning_interface::MoveGroupInterface& move_group,
     const std::string& object_id,

@@ -33,19 +33,7 @@ int main(int argc, char** argv)
     ros::AsyncSpinner spinner(1); spinner.start();
 
     // Charger le robot choisi
-    std::string robot_name;
-    nh.param<std::string>("/robot", robot_name, "");
-    std::string manipulator_group, gripper_group;
-    nh.param<std::string>("/robots/" + robot_name + "/manipulator_group", manipulator_group, "");
-    nh.param<std::string>("/robots/" + robot_name + "/gripper_group", gripper_group, "");
-
-    // Vérification
-    if (manipulator_group.empty() || gripper_group.empty()) {
-        ROS_FATAL("Impossible de charger les groupes MoveIt pour le robot '%s'. Vérifie robots.yaml !", robot_name.c_str());
-        return 1;
-    }
-
-    PickPlaceManager manager(manipulator_group, gripper_group);
+    PickPlaceManager manager = initRobot(nh);
     manager.openGripper();
 
     // Charger la liste des cubes

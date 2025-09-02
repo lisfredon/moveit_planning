@@ -6,6 +6,7 @@
 #include "moveit_planning/pick_place_manager.h"
 #include "moveit_planning/solvers_utils.h"
 #include "moveit_planning/grasp_utils.h"
+#include "moveit_planning/robot_utils.h"
 #include "moveit_planning/load_add_object.h"
 #include "moveit_planning/visualization_utils.h"
 #include "moveit_planning/error_handling.h"
@@ -23,7 +24,7 @@ public:
     PickPlaceActionServer(std::string name) :
         as_(nh_, name, boost::bind(&PickPlaceActionServer::executeCB, this, _1), false),
         action_name_(name), 
-        manager_(loadManipulatorGroup(), loadGripperGroup())
+        manager_(initRobot(nh_))
     {
         // --- AJOUTER LES CUBES DANS LA SCÈNE ---
         std::vector<std::string> cube_names;
@@ -42,24 +43,6 @@ public:
         // Démarrage de l'action server
         as_.start();
         ROS_INFO("PickPlace Action Server démarré.");
-    }
-
-    std::string loadManipulatorGroup() {
-        std::string robot_name;
-        nh_.param<std::string>("/robot", robot_name, "");
-
-        std::string manipulator_group;
-        nh_.param<std::string>("/robots/" + robot_name + "/manipulator_group", manipulator_group, "");
-        return manipulator_group;
-    }
-
-    std::string loadGripperGroup() {
-        std::string robot_name;
-        nh_.param<std::string>("/robot", robot_name, "");
-
-        std::string gripper_group;
-        nh_.param<std::string>("/robots/" + robot_name + "/gripper_group", gripper_group, "");
-        return gripper_group;
     }
 
     void executeCB(const moveit_planning::PickPlaceGoalConstPtr &goal) {

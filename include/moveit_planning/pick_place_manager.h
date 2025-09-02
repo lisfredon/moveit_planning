@@ -14,6 +14,8 @@ public:
     PickPlaceManager(const std::string& arm_group_name,
                      const std::string& gripper_group_name);
 
+    
+
     void openGripper();
     void closeGripper(double target = 0.0);
 

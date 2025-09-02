@@ -45,8 +45,7 @@ add_library(moveit_planning_lib
     src/grasp_utils.cpp 
     src/load_add_object.cpp 
     src/solvers_utils.cpp 
-    src/visualization_utils.cpp 
-    src/approch_utils.cpp )
+    src/visualization_utils.cpp )
 
 target_link_libraries(moveit_planning_lib
     ${catkin_LIBRARIES}

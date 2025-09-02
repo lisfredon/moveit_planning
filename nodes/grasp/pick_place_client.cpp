@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     goal.goal_pose.pose = cube_goal_pose; 
 
     // Solver utilisé
-    goal.solver_name = "OMPL"; // ou "RRTConnectkConfigDefault", etc.
+    goal.solver_name = "OMPL"; 
 
     ROS_INFO("Envoi du goal Pick&Place pour l'objet: %s", goal.object_id.c_str());
     ac.sendGoal(goal);
