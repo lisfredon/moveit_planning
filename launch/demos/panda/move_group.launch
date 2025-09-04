@@ -60,6 +60,12 @@
       <arg name="arm_id" value="$(arg arm_id)" />
     </include>
 
+        <!-- CHOMP -->
+    <include file="$(dirname)/planning_pipeline.launch.xml">
+      <arg name="pipeline" value="chomp" />
+      <arg name="arm_id" value="$(arg arm_id)" />
+    </include>
+
     <!-- LERP-->
     <include file="$(dirname)/planning_pipeline.launch.xml">
       <arg name="pipeline" value="lerp" />
@@ -67,7 +73,7 @@
     </include>
 
     <!-- Support custom planning pipeline -->
-    <include if="$(eval arg('pipeline') not in ['ompl','lerp'])"
+    <include if="$(eval arg('pipeline') not in ['ompl','chomp','lerp'])"
              file="$(dirname)/planning_pipeline.launch.xml">
       <arg name="pipeline" value="$(arg pipeline)" />
       <arg name="arm_id" value="$(arg arm_id)" />

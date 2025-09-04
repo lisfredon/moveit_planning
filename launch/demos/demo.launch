@@ -2,13 +2,7 @@
   <!-- Robot à utiliser : panda ou pr2 -->
   <arg name="robot_type" default="panda"/>
 
-  <!-- Options communes -->
-  <arg name="db" default="false" />
-  <arg name="db_path" default="$(find moveit_planning)/default_warehouse_mongo_db" />
-  <arg name="debug" default="false" />
-  <arg name="use_rviz" default="true" />
-  <arg name="use_gui" default="false" />
-  <arg name="rviz_tutorial" default="false" />
+
 
   <!-- ============================= -->
   <!-- Section PR2 -->
@@ -48,9 +42,24 @@
 
     <arg name="arm_id" default="panda" />
     <arg name="pipeline" default="ompl" />
+
+        <!-- Options communes -->
+    <arg name="db" default="false" />
+    <arg name="db_path" default="$(find moveit_planning)/default_warehouse_mongo_db" />
+    
+    <arg name="debug" default="false" />
+    <arg name="load_gripper" default="true" />
+    <arg name="load_robot_description" default="true"/>
     <arg name="moveit_controller_manager" default="fake" />
     <arg name="fake_execution_type" default="interpolate" />
-    <arg name="rviz_config" default="$(find moveit_planning)/launch/demo/rviz/moveit.rviz"/>
+    <arg name="transmission" />
+
+    <arg name="use_rviz" default="true" />
+    <arg name="use_gui" default="false" />
+    <arg name="rviz_tutorial" default="false" />
+
+
+    <!--arg name="rviz_config" default="$(find moveit_planning)/launch/demo/rviz/moveit.rviz"-->
 
     <!-- TF root -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0"
@@ -68,18 +77,18 @@
             respawn="true" output="screen" />
     </group>
 
-    <include file="$(find moveit_planning)/launch/demos/$(arg robot_type)/move_group.launch" pass_all_args="true">
+    <include file="$(dirname)/$(arg robot_type)/move_group.launch" pass_all_args="true">
       <arg name="allow_trajectory_execution" value="true" />
       <arg name="info" value="true" />
     </include>
 
-    <include file="$(find moveit_planning)/launch/demos/common/moveit_rviz.launch" if="$(arg rviz_tutorial)">
+    <include file="$(dirname)/common/moveit_rviz.launch" if="$(arg use_rviz)">
       <arg name="rviz_tutorial" value="$(arg rviz_tutorial)"/>
-      <arg name="rviz_config" value="$(arg rviz_config)"/>
+      <arg name="rviz_config" value="$(dirname)/rviz/moveit.rviz"/>
       <arg name="debug" value="$(arg debug)"/>
     </include>
 
-    <include file="$(find moveit_planning)/launch/demos/common/default_warehouse_db.launch" if="$(arg db)">
+    <include file="$(dirname)/common/default_warehouse_db.launch" if="$(arg db)">
       <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
     </include>
   </group>

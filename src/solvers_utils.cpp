@@ -7,6 +7,7 @@ SolverType solverFromString(const std::string& solver_name) {
     if (solver_name == "OMPL")  return SolverType::OMPL;
     if (solver_name == "CARTESIAN") return SolverType::CARTESIAN;
     if (solver_name == "JOINT_INTERPOLATION") return SolverType::JOINT_INTERPOLATION;
+    if (solver_name == "CHOMP") return SolverType::CHOMP;
     ROS_WARN_STREAM("Solver inconnu : " << solver_name << ", utilisation de OMPL par défaut.");
     return SolverType::OMPL;  // valeur par défaut
 }
@@ -48,6 +49,26 @@ bool planAndExecute(moveit::planning_interface::MoveGroupInterface& move_group,
             moveit::planning_interface::MoveGroupInterface::Plan plan;
             if (move_group.plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
                 return move_group.execute(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS;
+            }
+            return false;
+        }
+        case SolverType::CHOMP: {
+            robot_state::RobotState start_state = *move_group.getCurrentState();
+            const robot_state::JointModelGroup* joint_model_group = start_state.getJointModelGroup(move_group.getName());
+
+            if (!start_state.setFromIK(joint_model_group, target_pose, 5.0)) {
+                ROS_WARN("CHOMP: impossible de trouver une configuration articulaire pour cette pose.");
+                return false;
+            }
+
+            std::vector<double> joint_values;
+            start_state.copyJointGroupPositions(joint_model_group, joint_values);
+            move_group.setJointValueTarget(joint_values);
+
+            moveit::planning_interface::MoveGroupInterface::Plan chomp_plan;
+            move_group.setPlannerId("CHOMP");  
+            if (move_group.plan(chomp_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
+                return move_group.execute(chomp_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS;
             }
             return false;
         }

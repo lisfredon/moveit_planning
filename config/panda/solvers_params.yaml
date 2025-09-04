@@ -1,5 +1,5 @@
-approch_solver : OMPL
+approch_solver : CHOMP
 
-grip_solver : OMPL
+grip_solver : CHOMP
 
-goal_solver : OMPL
+goal_solver : CHOMP

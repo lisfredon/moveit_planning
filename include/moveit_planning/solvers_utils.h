@@ -8,7 +8,8 @@
 enum class SolverType {
     OMPL,
     CARTESIAN,
-    JOINT_INTERPOLATION
+    JOINT_INTERPOLATION,
+    CHOMP
 };
 
 SolverType solverFromString(const std::string& solver_name);
