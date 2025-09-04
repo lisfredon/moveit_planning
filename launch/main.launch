@@ -1,7 +1,10 @@
 <launch>
-  <rosparam file="/home/lfredon/Documents/ws_moveit/src/moveit_planning/config/object_params.yaml" command="load"/>
-  <rosparam file="/home/lfredon/Documents/ws_moveit/src/moveit_planning/config/solvers_params.yaml" command="load"/>
-  <rosparam file="/home/lfredon/Documents/ws_moveit/src/moveit_planning/config/robot_params.yaml" command="load"/>
+
+  <arg name="robot_type" default="panda" /> <!-- or pr2 -->
+
+  <rosparam file="$(find moveit_planning)/config/$(arg robot_type)/object_params.yaml" command="load"/>
+  <rosparam file="$(find moveit_planning)/config/$(arg robot_type)/solvers_params.yaml" command="load"/>
+  <rosparam file="$(find moveit_planning)/config/$(arg robot_type)/robot_params.yaml" command="load"/>
   <node name="main" pkg="moveit_planning" type="main" output="screen">
   
   </node>

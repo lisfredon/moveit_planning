@@ -1,0 +1,20 @@
+<launch>
+  <arg name="robot_type" default="panda"/>  
+  <arg name="rviz_tutorial" default="true"/>
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
+
+  <arg name="rviz_config" default="$(find moveit_planning)/launch/demos/rviz/moveit.rviz" />
+
+  <!-- chemin vers le bon kinematics.yaml -->
+  <arg name="kinematics_yaml" default="$(find moveit_planning)/config/$(arg robot_type)/kinematics.yaml"/>
+
+  <!-- Charge le kinematics.yaml si présent -->
+  <rosparam if="$(eval arg('robot_type') == 'pr2')" command="load" file="$(arg kinematics_yaml)"/>
+
+  <!-- Lancement unique de RViz -->
+  <node name="$(anon rviz)" launch-prefix="$(arg launch_prefix)"
+        pkg="rviz" type="rviz" respawn="false"
+        args="-d $(arg rviz_config)" output="screen"/>
+</launch>

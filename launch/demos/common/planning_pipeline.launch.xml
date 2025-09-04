@@ -1,0 +1,18 @@
+<launch>
+  <!-- This file makes it easy to include different planning pipelines;
+       It is assumed that all planning pipelines are named XXX_planning_pipeline.launch  -->
+
+  <!-- Choose planning pipeline (ompl, trajopt, ) -->
+  <arg name="pipeline" default="ompl" />
+
+  <!-- Choose robot -->
+  <arg name="robot_type" default="panda" /> <!-- or pr2 -->
+
+  <!-- For consistency, keep arm_id for Panda (needed by some configs) -->
+  <arg name="arm_id" default="$(arg robot_type)" />
+
+  <!-- Include robot-specific planning pipeline -->
+  <include ns="$(arg pipeline)"
+           file="$(find $(arg robot_type)_moveit_config)/launch/$(arg pipeline)_planning_pipeline.launch.xml"
+           pass_all_args="true"/>
+</launch>

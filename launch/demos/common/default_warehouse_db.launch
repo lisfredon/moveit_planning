@@ -1,0 +1,14 @@
+<launch>
+  <!-- Robot : panda ou pr2 -->
+  <arg name="robot_type" default="panda" />
+  <arg name="reset" default="false"/>
+  
+    <include file="$(dirname)/launch/warehouse.launch">
+      <arg name="moveit_warehouse_database_path" value="$(find moveit_planning)/default_warehouse_mongo_db/$(arg robot_type)" />
+    </include>
+
+
+  <!-- If we want to reset the database, run this node -->
+  <node if="$(arg reset)" name="$(anon moveit_default_db_reset)" type="moveit_init_demo_warehouse" pkg="moveit_ros_warehouse" respawn="false" output="screen" />
+
+</launch>
