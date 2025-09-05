@@ -6,7 +6,7 @@
   <name>moveit_planning</name>
   <version>0.0.1</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the panda with the MoveIt Motion Planning Framework
+     MoveIt package for multiple robots (Panda and PR2)
   </description>
 
   <author email="moveit_releasers@googlegroups.com">MoveIt maintainer team</author>
@@ -26,6 +26,11 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_eigen</depend>
 
+  <depend>pr2_description</depend>
+  <depend>pr2_moveit_config</depend>
+  <depend>pr2_controllers_msgs</depend>
+  <depend>pr2_mechanism_controllers</depend>
+  
     <!-- Action dependencies -->
   <build_depend>actionlib</build_depend>
   <build_depend>actionlib_msgs</build_depend>
