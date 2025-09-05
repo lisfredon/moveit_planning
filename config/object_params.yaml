@@ -3,8 +3,8 @@ cubes: ["cube1", "cube2"]
 cube1:
   id: "cube1"
   size: [0.05, 0.05, 0.08]
-  position: [0.2, 0.4, 0.3]
-  orientation: [0.0, 0.0, 0.2, 1.0]
+  position: [0.2, 0.4, 0.7]
+  orientation: [0.0, 0.0, 0.0, 1.0]
 
 cube2:
   id: cube2
@@ -20,7 +20,7 @@ table1:
 
 how_take_cube : 
   choice_face: 2 # 0:+X, 1:-X, 2:+Y, ...
-  side_face : width_down # width or length
+  side_face : width_down # width or length and high or down 
 
 goal:
   position: [0.2, 0.4, 0.0]

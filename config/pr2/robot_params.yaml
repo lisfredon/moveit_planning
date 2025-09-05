@@ -1,0 +1,8 @@
+robots:
+  pr2:
+    manipulator_group: right_arm  #ou left_arm
+    gripper_group: right_gripper #ou left_gripper
+    base_frame: base_link 
+
+# robot sélectionné
+robot: pr2

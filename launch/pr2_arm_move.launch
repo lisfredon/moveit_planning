@@ -1,0 +1,4 @@
+<launch>
+    <!-- Lancer le script Python pour bouger le bras -->
+    <node name="pr2_move" pkg="moveit_planning" type="pr2_move" output="screen"/>
+</launch>

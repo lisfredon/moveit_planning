@@ -8,6 +8,12 @@
   <!-- Section PR2 -->
   <!-- ============================= -->
   <group if="$(eval arg('robot_type') == 'pr2')">
+    <arg name="db" default="false" />
+    <arg name="debug" default="false" />
+
+    <arg name="use_rviz" default="true" />
+    <arg name="use_gui" default="false" />
+    <arg name="rviz_tutorial" default="false" />
 
     <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0"
           args="0 0 0 0 0 0 odom_combined base_footprint 100" />
@@ -20,19 +26,19 @@
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
           respawn="true" output="screen" />
 
-    <include file="$(find moveit_planning)/launch/demos/$(arg robot_type)/move_group.launch">
+    <include file="$(dirname)/$(arg robot_type)/move_group.launch">
       <arg name="allow_trajectory_execution" value="true"/>
       <arg name="fake_execution" value="true"/>
       <arg name="info" value="true"/>
+    </include>
+
+    <include file="$(dirname)/common/moveit_rviz.launch" if="$(arg use_rviz)">
+      <arg name="rviz_tutorial" value="$(arg rviz_tutorial)"/>
+      <arg name="rviz_config" value="$(dirname)/rviz/moveit.rviz"/>
       <arg name="debug" value="$(arg debug)"/>
     </include>
 
-    <include file="$(find moveit_planning)/launch/demos/common/moveit_rviz.launch">
-      <arg name="config" value="true"/>
-      <arg name="debug" value="$(arg debug)"/>
-    </include>
-
-    <include file="(find moveit_planning)/launch/demos/common/default_warehouse_db.launch" if="$(arg db)"/>
+    <include file="(dirname)/common/default_warehouse_db.launch" if="$(arg db)"/>
   </group>
 
   <!-- ============================= -->

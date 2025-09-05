@@ -81,6 +81,10 @@ add_executable(moncube nodes/grasp/moncube.cpp)
 target_link_libraries(moncube ${catkin_LIBRARIES})
 add_dependencies(moncube ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(pr2_move src/pr2_move.cpp)
+target_link_libraries(pr2_move ${catkin_LIBRARIES})
+add_dependencies(pr2_move ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 add_executable(main nodes/grasp/main.cpp)
 target_link_libraries(main ${catkin_LIBRARIES} moveit_planning_lib)
 add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
